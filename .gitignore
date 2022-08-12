@@ -1,2 +1,5 @@
 # Ignore the environment file because sensitive info
 .env
+
+# Ignore the node_modules dir, because package.json should list all modules anyway
+node_modules
