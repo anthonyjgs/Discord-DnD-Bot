@@ -35,6 +35,8 @@ for (const file of commandFiles) {
 // Create a REST object and set the token
 const rest = new REST({ version: '10' }).setToken(token);
 
+console.log(commands);
+
 // Actually registers the commands
 rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands })
 	.then(() => console.log('Successfully registered application commands.'))

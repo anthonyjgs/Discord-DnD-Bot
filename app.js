@@ -6,18 +6,19 @@ path. */
 const path = require("node:path");
 // Import GatewayIntentBits, Collection, Client, etc. from discord.js module
 const { Client, Collection, GatewayIntentBits } = require("discord.js");
-// Create bot client and its intents
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 // Setup the environment variables: botToken
 /* NOTE: the .env variables do not autocomplete, but they are still accessed
     via process.env.VARIABLE_NAME*/
 require('dotenv').config()
 const botToken = process.env.DISCORD_TOKEN;
 
+// Create bot client and its intents
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+
 // Setup command variables, path, and get commandFiles
 client.commands = new Collection();
 const commandsPath = path.join(__dirname, "commands");
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"))
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"));
 
 
 for (const file of commandFiles) {
@@ -34,19 +35,23 @@ client.once("ready", () => {
 })
 
 client.on("interactionCreate", async interaction => {
+    console.log("Interaction create triggered!");
     if (!interaction.isChatInputCommand()) return;
     
     // Get the command from the client, using commandName from the interaction object
-    const command = client.commands.get(interaction.commandName)
+    const command = client.commands.get(interaction.commandName);
 
     // If it's not a command, return
-    if (!command) return;
+    if (!command) {
+        console.log(interaction.commandName + " is not a command!");
+        return;
+    }
 
     try {
         await command.execute(interaction);
     } catch (error) {
         console.error(error);
-        await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true })
+        await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
     }
 });
 
