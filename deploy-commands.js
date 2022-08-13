@@ -37,7 +37,17 @@ const rest = new REST({ version: '10' }).setToken(token);
 
 console.log(commands);
 
+// Delete existing commands so this script essentially refreshes everything
+// for guild-based commands
+rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: [] })
+	.then(() => console.log('Successfully deleted all guild commands.'))
+	.catch(console.error);
+// for global commands
+rest.put(Routes.applicationCommands(clientId), { body: [] })
+	.then(() => console.log('Successfully deleted all application commands.'))
+	.catch(console.error);
+
 // Actually registers the commands
 rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands })
-	.then(() => console.log('Successfully registered application commands.'))
+	.then(() => console.log('Successfully registered guild application commands.'))
 	.catch(console.error);

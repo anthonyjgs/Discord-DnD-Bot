@@ -20,7 +20,7 @@ client.commands = new Collection();
 const commandsPath = path.join(__dirname, "commands");
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"));
 
-
+// The command handler setup:
 for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
     const command = require(filePath);
@@ -29,31 +29,25 @@ for (const file of commandFiles) {
     client.commands.set(command.data.name, command);
 }
 
-// When the bot client is ready, run this once
-client.once("ready", () => {
-    console.log("DnD bot is online!");
-})
+// The event handler:
+const eventsPath = path.join(__dirname, "events");
+const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
-client.on("interactionCreate", async interaction => {
-    console.log("Interaction create triggered!");
-    if (!interaction.isChatInputCommand()) return;
-    
-    // Get the command from the client, using commandName from the interaction object
-    const command = client.commands.get(interaction.commandName);
 
-    // If it's not a command, return
-    if (!command) {
-        console.log(interaction.commandName + " is not a command!");
-        return;
-    }
 
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error(error);
-        await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
-    }
-});
+// Uses files in the events dir instead of coding it all here in app.js
+// For each file, defines the relevant event function
+for (const file of eventFiles) {
+	const filePath = path.join(eventsPath, file);
+	const event = require(filePath);
+    /* If an event happens with the same name as defined in one of the event files
+        then it will run the execute code found within that same file.*/
+	if (event.once) {
+		client.once(event.name, (...args) => event.execute(...args));
+	} else {
+		client.on(event.name, (...args) => event.execute(...args));
+	}
+}
 
 // Login to discord with the bot token
 client.login(botToken);
