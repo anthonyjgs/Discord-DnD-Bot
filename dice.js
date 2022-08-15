@@ -62,7 +62,7 @@ function rollDice(quantity, sides) {
 
     // Return an array of results of the dice
     let resultsArray = [];
-    for (i = 0; i < quantity; i++) {
+    for (let i = 0; i < quantity; i++) {
         resultsArray[i] = Math.floor(Math.random() * sides) + 1;
     }
 

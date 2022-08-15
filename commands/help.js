@@ -1,5 +1,5 @@
 // Imports SlashCommandBuilder from discord.js
-const { SlashCommandBuilder, Collection } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 
 // This module exports an object named data and an async function called execute
 module.exports = {
