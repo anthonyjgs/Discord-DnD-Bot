@@ -4,5 +4,10 @@
         "@discordjs/rest": "^1.0.1",
         "discord.js": "^14.2.0",
         "dotenv": "^16.0.1"
+    },
+    "devDependencies": {
+        "@typescript-eslint/eslint-plugin": "^5.33.1",
+        "@typescript-eslint/parser": "^5.33.1",
+        "eslint": "^8.22.0"
     }
 }

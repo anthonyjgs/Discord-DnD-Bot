@@ -1,5 +1,6 @@
 // Imports SlashCommandBuilder from discord.js
 const { SlashCommandBuilder, RPCCloseEventCodes, ReactionCollector } = require('discord.js');
+const { rollDiceString } = require('../dice.js');
 
 // This module exports an object named data and an async function called execute
 module.exports = {
@@ -12,13 +13,23 @@ module.exports = {
     // This is the code that runs when the command is called.
 	async execute(interaction) {
         let diceString = interaction.options.getString("dice");
-        diceString.trim();
-        const usageString = "dice string should be 'number of dice'd'number of sides'"
+
+        console.log("Recieved dice string is " + diceString);
+        let resultsArray = rollDiceString(diceString);
+        console.log("Results array is " + resultsArray);
+        // If the rollDiceString returned false, reply with the usage string
+        if (resultsArray[0] == false) {
+            await interaction.reply({ content: resultsArray[1], ephemeral: true });
+            return false;
+        }
         
-        // Dice string must start with 'd' or with a number, else return an error
-        // TODO: Check if dice string starts with a number ******************************************************************
-        if (diceString[0].toLowerCase != "d" || diceString[0] != ())
-            interaction.reply({ content: usageString, ephemeral: true })
-        await interaction.reply(diceString);
+        let resultsString = "You rolled: ";
+        for (let i = 0; i < resultsArray.length; i++) {
+            resultsString += ` ${resultsArray[i]} `;
+        }
+
+        // Discord reply with results, but also return the array for logic within other commands too.
+        await interaction.reply(resultsString);
+        return resultsArray;
 	},
 };
