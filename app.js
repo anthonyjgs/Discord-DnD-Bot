@@ -12,6 +12,10 @@ const { Client, Collection, GatewayIntentBits } = require("discord.js");
 require('dotenv').config()
 const botToken = process.env.DISCORD_TOKEN;
 
+// Implement sqlite3:
+var sqlite3 = require('sqlite3').verbose();
+
+
 // Create bot client and its intents
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
