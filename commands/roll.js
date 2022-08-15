@@ -1,6 +1,7 @@
 // Imports SlashCommandBuilder from discord.js
 const { SlashCommandBuilder, RPCCloseEventCodes, ReactionCollector } = require('discord.js');
 const { rollDiceString } = require('../dice.js');
+const { data } = require('./help.js');
 
 // This module exports an object named data and an async function called execute
 module.exports = {
@@ -32,4 +33,4 @@ module.exports = {
         await interaction.reply(resultsString);
         return resultsArray;
 	},
-};
+}
