@@ -2,6 +2,7 @@
 
 // Imports SlashCommandBuilder from discord.js
 const { SlashCommandBuilder } = require('discord.js');
+const Character = require('../dndlibs/character.js');
 
 // This module exports an object named data and an async function called execute
 module.exports = {
@@ -12,6 +13,7 @@ module.exports = {
     
     // This is the code that runs when the command is called.
 	async execute(interaction) {
+        await Character.create_character(interaction);
 		await interaction.reply('What discord message do you want to send?');
 	},
 };

@@ -1,20 +1,24 @@
+/* This is the node entrypoint for the Dungeons and Discord Bot.
+    This file mainly serves to connect seperate parts together and get the bot running.
+    Commands and events are seperated out into other files.
+*/
+
 // Node's native file system module
 const fs = require("node:fs");
+
 /* Node's native path utility module. Because "/" is not cross platform,
 path.join() is nice because it automatically detects what joiner to use in a
 path. */
 const path = require("node:path");
+
 // Import GatewayIntentBits, Collection, Client, etc. from discord.js module
 const { Client, Collection, GatewayIntentBits } = require("discord.js");
+
 // Setup the environment variables: botToken
 /* NOTE: the .env variables do not autocomplete, but they are still accessed
     via process.env.VARIABLE_NAME*/
 require('dotenv').config()
 const botToken = process.env.DISCORD_TOKEN;
-
-// Implement sqlite3:
-var sqlite3 = require('sqlite3').verbose();
-
 
 // Create bot client and its intents
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -36,8 +40,6 @@ for (const file of commandFiles) {
 // The event handler:
 const eventsPath = path.join(__dirname, "events");
 const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
-
-
 
 // Uses files in the events dir instead of coding it all here in app.js
 // For each file, defines the relevant event function

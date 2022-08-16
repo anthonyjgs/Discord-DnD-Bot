@@ -1,6 +1,6 @@
 // Imports SlashCommandBuilder from discord.js
 const { SlashCommandBuilder  } = require('discord.js');
-const { rollDiceString } = require('../dice.js');
+const { rollDiceString } = require('../dndlibs/dice.js');
 
 // This module exports an object named data and an async function called execute
 module.exports = {
