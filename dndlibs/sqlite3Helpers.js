@@ -19,15 +19,15 @@ async function execute(statement, ...args) {
         err ? console.log(err.message) : console.log("Database opened!")
         // ALL CODE SHOULD BE EXECUTED IN THIS CALLBACK
         let rowArray = [];
-        db.all(statement, args, (err, row) => {
+        db.all(statement, args, (err, rows) => {
             if (err) console.log(err.message);
-            else if (row) rowArray.push(row);
+            else if (rows) rowArray = rows;
         });
 
         db.close(err => {
             err ? console.log(err.message) : console.log("Database closed!")
-            // TODO: Fix the row arrays to return key-value pairs instead of objects.
-            console.log(`Within the execute statement, the row array is: ${rowArray}`);
+            // Returns an array of the info retrieved. Each element is an object containing key-value pairs
+            console.log(`Within the execute statement, the row array is: ${JSON.stringify(rowArray)}`);
             return rowArray;
         });
     });
