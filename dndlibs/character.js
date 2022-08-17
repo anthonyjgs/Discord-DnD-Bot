@@ -15,7 +15,7 @@ async function create_character(interaction) {
     // TODO: Check if the user exists in the users table. If not, add them
     let userId = interaction.user.id;
     let userRow = [];
-    sql.execute("blarg");
+    console.log(await sql.execute("SELECT * FROM Users;"));
 
 
     // TODO: If the userRow SELECT came back undefined

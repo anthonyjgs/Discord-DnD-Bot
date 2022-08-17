@@ -12,15 +12,23 @@ const sql = require('sqlite3').verbose();
  * @function execute
  * @param {String} statement The sql statement to run.
  * @param {...args} parameters The parameters used to replace ?'s in the statement
+ * @return {Array} The rows received by db.all
  */
 async function execute(statement, ...args) {
     const db = new sql.Database('./dnd.db', sql.OPEN_READWRITE, err => {
         err ? console.log(err.message) : console.log("Database opened!")
         // ALL CODE SHOULD BE EXECUTED IN THIS CALLBACK
+        let rowArray = [];
         db.all(statement, args, (err, row) => {
             if (err) console.log(err.message);
-            else if (row) yield row;
-            else return;
+            else if (row) rowArray.push(row);
+        });
+
+        db.close(err => {
+            err ? console.log(err.message) : console.log("Database closed!")
+            // TODO: Fix the row arrays to return key-value pairs instead of objects.
+            console.log(`Within the execute statement, the row array is: ${rowArray}`);
+            return rowArray;
         });
     });
 }
