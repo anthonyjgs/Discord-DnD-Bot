@@ -14,6 +14,6 @@ module.exports = {
     // This is the code that runs when the command is called.
 	async execute(interaction) {
         await Character.create_character(interaction);
-		await interaction.reply('What discord message do you want to send?');
+		// await interaction.reply('What discord message do you want to send?');
 	},
 };
