@@ -3,55 +3,40 @@
 // This library uses the dice functions
 const dice = require('./dice.js');
 
-// This library needs access to my sqlHelpers
-const sql = require('./sqlite3Helpers.js');
+const Database = require('better-sqlite3');
 
 // There are six attribute stats: Str, Dex, Con, Wis, Int, Cha
 const STATSNUMBER = 6;
 
 // Initializes a new character into the database.
 async function create_character(interaction) {
+    let channel = interaction.channel;
 
+    // Open the dnd.db and set it to console.log every statement
+    const db = new Database('dnd.db', {verbose: console.log} )
     // TODO: Check if the user exists in the users table. If not, add them
     let userId = interaction.user.id;
-    let userRow = [];
-    console.log(await sql.execute("SELECT * FROM Users;"));
+    const stmt = db.prepare('SELECT * FROM Users WHERE id = ?');
+    userRow = stmt.get(userId);
+    console.log(`userRow is: ${userRow}`);
 
 
-    // TODO: If the userRow SELECT came back undefined
-    if (!userRow) {
-        // db.exec(`INSERT INTO Users(id) VALUES(?);`, userId);
+    // Naming the character
+    interaction.reply("What would you like to name your new character?");
+    const filter = m => {
+        return m.author.id == userId;
     }
-    // Check if the user already has an active character, if so tell them and quit
-    if (userRow.active_character_id) {
-        console.log(`${interaction.user.username} already has an active character!`);
-        interaction.reply("You already have a character!");
-        return false;
-    }
+    let nameCollection = await channel.awaitMessages({filter, max: 1, time: 15000 * 60});
+    // name is the content of the only item in the collection with whitespace trimmed
+    let name = nameCollection.first().content.trim();
 
-    // TODO: Create a collector to ask questions and receive answers
-    // Filter for messages from the same user
-    const filter = m => m.author.id == userId;
+    console.log(`Name is: ${name}`);
     
-    // Collector grabs messages from the channel it was started in, and it also
-    // filters messages to be the same as the userId who is making this character.
-    // The collector is active for 15 minutes.
-    const collector = interaction.channel.createMessageCollector({filter, time: (60000 * 15)});
-
-    // When the collector ends or times out:
-    collector.on('end', collected => {
-        console.log(`Collected: ${collected.size} items.`)
-    });
-
-    let characterName = "";
-    // What name for the character?
-    collector.on('collect', m => {
-        characterName = m.content;
-    });
-    if (characterName == "") {
-        interaction.reply({content: "Your character must have a name!", ephemeral: true});
+    if (name == "") {
+        interaction.followUp({content: "Your character must have a name!", ephemeral: true});
         return false;
     }
+
     // TODO: What race for the character?
 
     // TODO: What class for the character?

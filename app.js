@@ -21,7 +21,7 @@ require('dotenv').config()
 const botToken = process.env.DISCORD_TOKEN;
 
 // Create bot client and its intents
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
 // Setup command variables, path, and get commandFiles
 client.commands = new Collection();
