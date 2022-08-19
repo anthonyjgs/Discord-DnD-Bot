@@ -15,21 +15,21 @@ function rollDiceString(diceString) {
     // First check if it's a valid dice string
     diceString.toLowerCase();
     diceString.trim();
-    if (!diceString.includes('d')) {
+    // Matches only dice strings
+    diceString = diceString.match(/^((\d*d)|d)((?<=d)\d*|(?<=\d)d){0,3}\d*$/)[0];
+    console.log(`diceString after match is: ${diceString}`);
+    if (!diceString) {
         console.log(usageString);
         return [false, usageString];
     }
 
-    // If starts with d, assume quantity is 1 and use the number string for sides
+    // Split the dice string around 'd'
     let diceArray = diceString.split('d');
-    if (diceString[0] == 'd' && diceArray.length == 1) {
-        return rollDice(1, diceArray[0]);
-    }
-    // If it doesn't start with d, but the string still splits into two elements,
-    // then use the elements for quantity and sides.
-    else if (diceString[0] != 'd' && diceArray.length == 2) {
-        return rollDice(diceArray[0], diceArray[1]);
-    }
+    console.log(`diceArray initialized to: ${JSON.stringify(diceArray)}`);
+    // If diceString was d# or #d# or #d#d#
+    if (diceArray.length == 1) return rollDice(1, diceArray[0]);
+    else if (diceArray.length == 2) return rollDice(diceArray[0], diceArray[1]);
+    else if (diceArray.length == 3) return rollDice(diceArray[0], diceArray[1], diceArray[2]);
     // If the previous if statements were false, the string is likely wrong
     else {
         console.log(usageString);
@@ -44,9 +44,10 @@ function rollDiceString(diceString) {
  * @function rollDice
  * @param {*} quantity The number of dice to roll and return
  * @param {*} sides How many sides for each die
+ * @param {*} drop How many of the lowest values to drop
  * @return {Array} Array of results of each die
  */
-function rollDice(quantity, sides) {
+function rollDice(quantity, sides, drop = 0) {
     // Check that quantity and sides are both positive integers, and convert if needed
     for (let i in arguments) {
         if (typeof arguments == String){
@@ -60,11 +61,20 @@ function rollDice(quantity, sides) {
         arguments[i] = Math.floor(arguments[i]);
     }
 
-    // Return an array of results of the dice
+    // Calculate all the rolls
     let resultsArray = [];
     for (let i = 0; i < quantity; i++) {
         resultsArray[i] = Math.floor(Math.random() * sides) + 1;
     }
+
+    // Sort the array by numerical value (not ascii character value, which is the default)
+    resultsArray.sort((a,b) => a - b).reverse();
+    console.log(`resultsArray before drop: ${JSON.stringify(resultsArray)}`);
+    // Drop rolls if necessary
+    for (let i = 0; i < drop; i++) {
+        resultsArray.pop();
+    }
+    console.log(`resultsArray after drop: ${JSON.stringify(resultsArray)}`);
 
     return resultsArray;
 }

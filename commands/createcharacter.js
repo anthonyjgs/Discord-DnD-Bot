@@ -4,6 +4,7 @@
 // eslint-disable-next-line no-unused-vars
 const { SlashCommandBuilder, BaseInteraction } = require('discord.js');
 const Database = require('better-sqlite3');
+const Dice = require('../dndlibs/dice');
 
 // This module exports an object named data and an async function called execute
 module.exports = {
@@ -103,15 +104,50 @@ module.exports = {
         console.log(`Character race: ${characterRace}`);
         console.log(`Character class: ${characterClass}`);
 
+        interaction.reply('Creating your character...')
+
+        // Roll the new character's stats
+        let statRolls = [];
+        // 6 attributes. Str, Dex, Con, Int, Wis, Cha
+        const NUMOFATTRIBUTES = 6;
+        // Each element in statRolls is the sum of the results of 4d6d1
+        for (let i = 0; i < NUMOFATTRIBUTES; i++) {
+            statRolls.push(Dice.rollDice(4, 6, 1).reduce((a, b) => a + b, 0));
+        }
+
+        interaction.channel.send(`You rolled these stat values: **${statRolls.join(', ')}**\n` +
+                                 'Assign your stats by sending a message with each attribute, starting with the one ' +
+                                 ' you want to have the highest roll, and ending with the one you want to have the lowest roll.\n' +
+                                 'Example message: strength, dexterity, constitution, intelligence, wisdom, charisma');
+        // TODO: Show the user their character's attribute bonuses from race,
+        // ...inform them that if they get to choose atribute bonuses, that happens next
+
+        // Receive the stats message from the user
+        const filter = m => m.author.id == userId;
+        let statsMsgValid = false;
+        let statsMsg = '';
+        while (!statsMsgValid) {
+            statsMsg = await interaction.channel.awaitMessages({filter, max: 1}).first().content;
+            // TODO: Check if the stats msg is valid and prepare the array
+        }
+        // TODO: Step1 of applying attributes. Add relevant rolls with the attribute bonuses, and display
+
+        // TODO: Prompt to add remaining attribute bonuses
+
+        // TODO: Starting Equipment/Money
+
         // Initialize the character into the relevant tables
+        // TODO: Insert the stats into the database
         db.prepare('INSERT INTO Characters(owner_id, name) VALUES(?, ?)').run(userId, characterName);
         const characterId = db.prepare('SELECT character_id FROM Characters WHERE owner_id = ? AND name = ?').get(userId, characterName).character_id;
         db.prepare('INSERT INTO Statblocks(id, race, class) VALUES(?, ?, ?)').run(characterId, characterRace, characterClass);
         db.prepare('UPDATE Users SET active_character_id = ? WHERE id = ?').run(characterId, userId);
 
-        // Created a level 0 character, prompt user to use the statsRoll command for next step
-        await interaction.reply(`Created your new character, **${characterName} the ${characterRace} ${characterClass.toLowerCase()}**.\n` +
+        // Confirm to the user that the character was created
+        await interaction.followUp(`Created your new character, **${characterName} the ${characterRace} ${characterClass.toLowerCase()}**.\n` +
                                 'To finish your character and roll stats, use the **/statsRoll** command!');
+
+        db.close();
         return;
 	},
 };
