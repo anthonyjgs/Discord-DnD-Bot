@@ -122,7 +122,7 @@ function raceAbilityScoreBonuses(race) {
                 default:
                     throw console.error(`Invalid subrace: ${subRace}`);
             }
-            break;
+            //break;
 
         case 'half-elf':
             // TODO: Ability scores based on whole race
@@ -142,7 +142,7 @@ function raceAbilityScoreBonuses(race) {
                 default:
                     throw console.error(`Invalid subrace: ${subRace}`);
             }
-            break;
+            //break;
 
         case 'human':
             // TODO: Ability scores based on whole race
