@@ -311,11 +311,12 @@ module.exports = {
         interaction.channel.send(`${characterName}'s final ability scores: \n${JSON.stringify(abilityScores)}`)
         // TODO: Starting Equipment/Money
 
-        // Initialize the character into the relevant tables
+        // TODO Initialize the character into the relevant tables
         interaction.channel.send("Would you like to keep this character?");
         // TODO: Make a while loop here
-        let isCommitted = await interaction.channel.awaitMessages({filter, max: 1})
-        if (isCommitted.first().toLowerCase() != 'yes') {
+        let isCommitted = await interaction.channel.awaitMessages({filter, max: 1});
+        isCommitted = isCommitted.first();
+        if (isCommitted.toLowerCase() != 'yes') {
             db.close();
             interaction.channel.send(`Cancelling character creation of ${characterName}`);
             return;
