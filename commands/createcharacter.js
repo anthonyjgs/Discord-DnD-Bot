@@ -11,7 +11,7 @@ const Dice = require('../dndlibs/dice');
  * @param {Array} statsMsgArray The msg content to check and use for allocating stats
  * @param {Array} statRolls The roll values to use for stat allocation, in order from highest to lowest
  */
-function allocateAbilityScores(statsMsgArray, statRolls) {
+function allocateAbilityScores(statsMsgArray, statRolls, interaction) {
     let scores = {
         str: 0,
         dex: 0,
@@ -27,7 +27,8 @@ function allocateAbilityScores(statsMsgArray, statRolls) {
     console.log(`statRollsCopy initialized as: ${JSON.stringify(statRollsCopy)}`);
 
     // Sort statRollsCopy so highest is at end, makes it easy to use pop() later
-    statRollsCopy = statRollsCopy.sort();
+    statRollsCopy = statRollsCopy.sort((a,b) => a - b);
+    console.log(`statRollsCopy after sort = ${JSON.stringify(statRollsCopy)}`);
     let receivedStats = [];
     for (let i = 0; i < statsMsg.length; i++) {
         let stat = statsMsg[i];
@@ -35,7 +36,6 @@ function allocateAbilityScores(statsMsgArray, statRolls) {
         console.log(`allocate received ${stat}`);
         if (receivedStats.includes(stat)) {
             interaction.channel.send(`Cannot assign duplicate stats: ${stat}`);
-            console.log('Cannot assign duplicate stats');
             return false;
         }
         for (let ability in scores) {
@@ -295,7 +295,7 @@ module.exports = {
                 continue;
             }
             // Step 1: Assigns an object with the rolls for each ability score to abilityScores 
-            abilityScores = allocateAbilityScores(statsMsgArray, statRolls);
+            abilityScores = allocateAbilityScores(statsMsgArray, statRolls, interaction);
             console.log(`abilityScores: ${JSON.stringify(abilityScores)}`);
             if (abilityScores != false) statsMsgValid = true;
         }
@@ -315,7 +315,7 @@ module.exports = {
         interaction.channel.send("Would you like to keep this character?");
         // TODO: Make a while loop here
         let isCommitted = await interaction.channel.awaitMessages({filter, max: 1});
-        isCommitted = isCommitted.first();
+        isCommitted = isCommitted.first().content;
         if (isCommitted.toLowerCase() != 'yes') {
             db.close();
             interaction.channel.send(`Cancelling character creation of ${characterName}`);
