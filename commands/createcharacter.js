@@ -49,6 +49,8 @@ function allocateAbilityScores(statsMsgArray, statRolls, interaction) {
     return scores;
 }
 
+// TODO: Insert raceAbilityScoreBonuses from character library
+
 /**
  * Returns an array of the ability score bonuses based on race
  * @param {String} race 
@@ -277,6 +279,7 @@ module.exports = {
         // ...inform them that if they get to choose atribute bonuses, that happens next
         const raceAbilityBonuses = raceAbilityScoreBonuses(characterRace);
         console.log(`raceAbilityBonuses: ${JSON.stringify(raceAbilityBonuses)}`);
+        interaction.channel.send(`${characterName} has the following ability score bonuses due to their race: ${JSON.stringify(raceAbilityBonuses)}`);
 
         // Receive the stats message from the user
         const filter = m => m.author.id == userId;
@@ -309,29 +312,37 @@ module.exports = {
 
         // Finally, display the final ability scores
         interaction.channel.send(`${characterName}'s final ability scores: \n${JSON.stringify(abilityScores)}`)
+
         // TODO: Starting Equipment/Money
 
         // TODO Initialize the character into the relevant tables
-        interaction.channel.send("Would you like to keep this character?");
+        interaction.channel.send("Would you like to keep this character? (yes/no)");
+
         // TODO: Make a while loop here
-        let isCommitted = await interaction.channel.awaitMessages({filter, max: 1});
-        isCommitted = isCommitted.first().content;
-        if (isCommitted.toLowerCase() != 'yes') {
-            db.close();
-            interaction.channel.send(`Cancelling character creation of ${characterName}`);
-            return;
+        let keep = false;
+        while (!keep) {
+            let isCommitted = await interaction.channel.awaitMessages({filter, max: 1});
+            isCommitted = isCommitted.first().content;
+            if (isCommitted.toLowerCase() == 'no') {
+                db.close();
+                interaction.channel.send(`Cancelling character creation of ${characterName}`);
+                return;  
+            } else if (isCommitted.toLowerCase() == 'yes') {
+                keep = true;
+            }
         }
 
         // TODO: Insert the stats into the database
         db.prepare('INSERT INTO Characters(owner_id, name) VALUES(?, ?)').run(userId, characterName);
         const characterId = db.prepare('SELECT character_id FROM Characters WHERE owner_id = ? AND name = ?').get(userId, characterName).character_id;
-        db.prepare('INSERT INTO Statblocks(id, race, class) VALUES(?, ?, ?)').run(characterId, characterRace, characterClass);
+        // Fill the Statblocks
+        db.prepare('INSERT INTO Statblocks(id, race, class, strength, dexterity, constitution, intelligence, wisdom, charisma) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)')
+            .run(characterId, characterRace, characterClass, abilityScores.str, abilityScores.dex, abilityScores.con, abilityScores.int, abilityScores.wis, abilityScores.cha);
         db.prepare('UPDATE Users SET active_character_id = ? WHERE id = ?').run(characterId, userId);
 
+        // TODO: Initialize character at level 1
         // Confirm to the user that the character was created
-        await interaction.followUp(`Created your new character, **${characterName} the ${characterRace} ${characterClass.toLowerCase()}**.\n` +
-                                'To finish your character and roll stats, use the **/statsRoll** command!');
-
+        await interaction.followUp(`Created your new character, **${characterName} the ${characterRace} ${characterClass.toLowerCase()}**.\n`);
         db.close();
         return;
 	},

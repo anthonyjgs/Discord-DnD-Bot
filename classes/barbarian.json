@@ -1,0 +1,42 @@
+{
+    "name": "Barbarian",
+    "hitDice": "1d12",
+    "startingHP": 12,
+    "proficiencies": [
+        "lightArmor", "mediumArmor", "shields",
+        "simpleWeapons", "martialWeapons"
+    ],
+    "savingThrows": ["str", "con"],
+    "freeSkills": 2,
+    "potentionalSkills": ["animalHandling", "athletics", "intimidation", "nature", "perception", "survival"],
+    "startingEquipment": {
+        "option1": ["greataxe", "anyMartialMeleeWeapon"],
+        "option2": ["2_handaxe", "anySimpleWeapon"],
+        "given": [
+            "explorersPack",
+            "4_javelin"
+        ]
+    },
+    "Features": {
+        "level1": ["rage", "unarmoredDefense"],
+        "level2": ["recklessAttack", "dangerSense"],
+        "level3": ["primalPath"],
+        "level4": ["abilityScoreImprovement"],
+        "level5": ["extraAttack", "fastMovement"],
+        "level6": ["pathFeature"],
+        "level7": ["feralInstinct"],
+        "level8": ["abilityScoreImprovement"],
+        "level9": ["brutalCritical1"],
+        "level10": ["pathFeature"],
+        "level11": ["relentlessRage"],
+        "level12": ["abilityScoreImprovement"],
+        "level13": ["brutalCritical2"],
+        "level14": ["pathFeature"],
+        "level15": ["persistentRage"],
+        "level16": ["abilityScoreImprovement"],
+        "level17": ["brutalCritical3"],
+        "level18": ["indomitableMight"],
+        "level19": ["abilityScoreImprovement"],
+        "level20": ["primalChampion"]
+    }
+}

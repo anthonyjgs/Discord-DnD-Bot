@@ -1,0 +1,105 @@
+{
+    "name": "Cleric",
+    "hitDice": "1d8",
+    "startingHP": 8,
+    "proficiencies": [
+        "lightArmor", "mediumArmor", "shields",
+        "simpleWeapons"
+    ],
+    "savingThrows": ["wis", "cha"],
+    "freeSkills": 2,
+    "potentionalSkills": ["history", "insight", "medicine", "persuasion", "religion"],
+    "startingEquipment": {
+        "option1": ["mace", "warhammer"],
+        "option2": ["scaleMail", "leatherArmor", "chainMail"],
+        "option3": [["lightCrossbow", "20_crossbowBolt"], "anySimpleWeapon"],
+        "option4": ["priestsPack", "explorersPack"],
+        "given": [
+            "shield",
+            "holySymbol"
+        ]
+    },
+    
+    "Levels": {
+        "level1": {
+            "Features": ["spellcasting", "divineDomain"],
+            "spellSlots": {"cantrips": 3, "spellLevel1": 2}
+        },
+        "level2": {
+            "Features": ["channelDivinity1", "divineDomainFeature"],
+            "spellSlots": {"spellLevel1": 3}
+        },
+        "level3": {
+            "Features": [],
+            "spellSlots": {"spellLevel1": 4, "spellLevel2": 2}
+        },
+        "level4": {
+            "Features": ["abilityScoreImprovement"],
+            "spellSlots": {"cantrips": 4, "spellLevel2": 3}
+        },
+        "level5": {
+            "Features": ["destroyUndead1"],
+            "spellSlots": {"spellLevel3": 2}
+        },
+        "level6": {
+            "Features": ["channelDivinity2", "divineDomainFeature"],
+            "spellSlots": {"spellLevel3": 3}
+        },
+        "level7": {
+            "Features": [],
+            "spellSlots": {"spellLevel4": 1}
+        },
+        "level8": {
+            "Features": ["abilityScoreImprovement", "destroyUndead2", "divineDomainFeature"],
+            "spellSlots": {"spellLevel4": 2}
+        },
+        "level9": {
+            "Features": [],
+            "spellSlots": {"spellLevel4": 3, "spellLevel5": 1}
+        },
+        "level10": {
+            "Features": ["divineIntervention1"],
+            "spellSlots": { "cantrips": 5, "spellLevel5": 2}
+        },
+        "level11": {
+            "Features": ["destroyUndead3"],
+            "spellSlots": {"spellLevel6": 1}
+        },
+        "level12": {
+            "Features": ["abilityScoreImprovement"],
+            "spellSlots": {}
+        },
+        "level13": {
+            "Features": [],
+            "spellSlots": {"spellLevel7": 1}
+        },
+        "level14": {
+            "Features": ["destroyUndead4"],
+            "spellSlots": {}
+        },
+        "level15": {
+            "Features": [],
+            "spellSlots": {"spellLevel8": 1}
+        },
+        "level16": {
+            "Features": ["abilityScoreImprovement"],
+            "spellSlots": {}
+        },
+        "level17": {
+            "Features": ["destroyUndead5", "divineDomainFeature"],
+            "spellSlots": {"spellLevel9": 1}
+        },
+        "level18": {
+            "Features": ["channelDivinity3"],
+            "spellSlots": {"spellLevel5": 3}
+        },
+        "level19": {
+            "Features": ["abilityScoreImprovement"],
+            "spellSlots": {"spellLevel6": 2}
+        },
+        "level20": {
+            "Features": ["divineIntervention2"],
+            "spellSlots": {"spellLevel7": 2}
+        }
+    }
+}
