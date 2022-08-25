@@ -7,162 +7,6 @@ const Database = require('better-sqlite3');
 const Dice = require('../dndlibs/dice');
 const Character = require('../dndlibs/character');
 
-/**
- * Checks ability scores and, if valid, returns an object with each ability score allocated via properties
- * @param {Array} statsMsgArray The msg content to check and use for allocating stats
- * @param {Array} statRolls The roll values to use for stat allocation, in order from highest to lowest
- */
-function allocateAbilityScores(statsMsgArray, statRolls, interaction) {
-    let scores = {
-        str: 0,
-        dex: 0,
-        con: 0,
-        int: 0,
-        wis: 0,
-        cha: 0
-    };
-    // Make a copy of statRolls so the original is not modified
-    let statRollsCopy = statRolls.map(x => x);
-    let statsMsg = statsMsgArray.map(s => s);
-    console.log(`statsMsg in allocate initialized as: ${JSON.stringify(statsMsg)}`);
-    console.log(`statRollsCopy initialized as: ${JSON.stringify(statRollsCopy)}`);
-
-    // Sort statRollsCopy so highest is at end, makes it easy to use pop() later
-    statRollsCopy = statRollsCopy.sort((a,b) => a - b);
-    console.log(`statRollsCopy after sort = ${JSON.stringify(statRollsCopy)}`);
-    let receivedStats = [];
-    for (let i = 0; i < statsMsg.length; i++) {
-        let stat = statsMsg[i];
-        stat.trim();
-        console.log(`allocate received ${stat}`);
-        if (receivedStats.includes(stat)) {
-            interaction.channel.send(`Cannot assign duplicate stats: ${stat}`);
-            return false;
-        }
-        for (let ability in scores) {
-            if (stat.includes(ability)) {
-                // Assign the stat values based on the ability score
-                scores[ability] = statRollsCopy.pop();
-                break;
-            }
-        }
-    }
-    return scores;
-}
-
-// TODO: Insert raceAbilityScoreBonuses from character library after moving it
-
-/**
- * Returns an array of the ability score bonuses based on race
- * @param {String} race 
- * @returns {Array}
- */
-function raceAbilityScoreBonuses(race) {
-    let bonuses = {
-        str: 0,
-        dex: 0,
-        con: 0,
-        int: 0,
-        wis: 0,
-        cha: 0
-    }
-    // Prep race string for easy classification
-    race = race.toLowerCase();
-    const raceArray = race.split(' ');
-    let primaryRace;
-    let subRace;
-    if (raceArray.length == 2) {
-        primaryRace = raceArray[1];
-        subRace = raceArray[0];
-    } else {
-        primaryRace = raceArray[0];
-    }
-
-    switch (primaryRace) {
-        case 'dragonborn':
-            // Ability scores based on whole race
-            bonuses.str += 2;
-            bonuses.cha += 1;
-            break;
-
-        case 'dwarf':
-            // Ability scores based on whole race
-            bonuses.con += 2;
-            // Ability scores based on subrace
-            switch (subRace) {
-                case 'hill':
-                    bonuses.wis += 1;
-                    break;
-                case 'mountain':
-                    bonuses.str += 2;
-                    break;
-                default:
-                    throw console.error(`Invalid subrace: ${subRace}`);
-            }
-            break;
-
-        case 'elf':
-            // Ability scores based on whole race
-            bonuses.dex += 2;
-            // TODO: Ability scores based on subrace
-            switch (subRace) {
-                case 'dark':
-                    break;
-                case 'high':
-                    break;
-                case 'wood':
-                    break
-                default:
-                    throw console.error(`Invalid subrace: ${subRace}`);
-            }
-            break;
-
-        case 'gnome':
-            // TODO: Ability scores based on whole race
-
-            // TODO: Ability scores based on subrace
-            switch (subRace) {
-                default:
-                    throw console.error(`Invalid subrace: ${subRace}`);
-            }
-            //break;
-
-        case 'half-elf':
-            // TODO: Ability scores based on whole race
-
-            break;
-
-        case 'half-orc':
-            // TODO: Ability scores based on whole race
-
-            break;
-
-        case 'halfling':
-            // TODO: Ability scores based on whole race
-
-            // TODO: Ability scores based on subrace
-            switch (subRace) {
-                default:
-                    throw console.error(`Invalid subrace: ${subRace}`);
-            }
-            //break;
-
-        case 'human':
-            // TODO: Ability scores based on whole race
-
-            break;
-
-        case 'tiefling':
-            // TODO: Ability scores based on whole race
-
-            break;
-
-        default:
-            throw console.error(`Race not listed: ${primaryRace}`);
-    }
-    return bonuses;
-}
-
 // This module exports an object named data and an async function, execute
 module.exports = {
     // Set the command's name and description
@@ -192,9 +36,8 @@ module.exports = {
             )
         ,
     
-    // This is the code that runs when the command is called.
     /**
-     * 
+     * This is the code that runs when the command is called.
      * @param {BaseInteraction} interaction 
      * @returns 
      */
@@ -224,8 +67,10 @@ module.exports = {
             return;
         }
 
-        const characterRace = interaction.options.getString('race');
-        const characterClass = interaction.options.getString('class');
+        const raceString = interaction.options.getString('race');
+        const characterRace = Character.races.find(o => o.Name == raceString);
+        const classString = interaction.options.getString('class');
+        const characterClass = Character.classes.find(o => o.Name == classString);
         console.log(`Character race: ${characterRace}`);
         console.log(`Character class: ${characterClass}`);
 
@@ -252,7 +97,7 @@ module.exports = {
         
         // TODO: Show user their character's abililty score bonuses from race,
         // ...inform them that if they get to choose bonuses, that happens next
-        const raceAbilityBonuses = raceAbilityScoreBonuses(characterRace);
+        const raceAbilityBonuses = characterRace.AbilityScoreBonuses;
         console.log(`raceAbilityBonuses: ${JSON.stringify(raceAbilityBonuses)}`);
         interaction.channel.send(
             `${characterName} has the following ability score bonuses due to` +
@@ -318,8 +163,11 @@ module.exports = {
         }
 
         // TODO: Insert the stats into the database
-        db.prepare('INSERT INTO Characters(owner_id, name) VALUES(?, ?)').run(userId, characterName);
-        const characterId = db.prepare('SELECT character_id FROM Characters WHERE owner_id = ? AND name = ?').get(userId, characterName).character_id;
+        db.prepare('INSERT INTO Characters(owner_id, name) VALUES(?, ?)')
+            .run(userId, characterName);
+        const characterId = db.prepare(
+            'SELECT character_id FROM Characters WHERE owner_id = ? AND name = ?'
+        ).get(userId, characterName).character_id;
         // Fill the Statblocks
         db.prepare(
             'INSERT INTO Statblocks(' +
@@ -340,6 +188,7 @@ module.exports = {
             .run(characterId, userId);
 
         // TODO: Initialize character at level 1
+
         // Confirm to the user that the character was created
         await interaction.followUp(
             `Created your new character, **${characterName} the ` +
@@ -350,3 +199,55 @@ module.exports = {
         return;
 	},
 };
+
+// TODO: Make this function export an error string instead of sending messages
+// within its own function body.
+/**
+ * Checks ability scores and, if valid, returns an object with each ability score allocated via properties
+ * @param {Array} statsMsgArray The msg content to check and use for allocating stats
+ * @param {Array} statRolls The roll values to use for stat allocation, in order from highest to lowest
+ */
+ function allocateAbilityScores(statsMsgArray, statRolls, interaction) {
+    let scores = {
+        str: 0,
+        dex: 0,
+        con: 0,
+        int: 0,
+        wis: 0,
+        cha: 0
+    };
+    // Make a copy of statRolls so the original is not modified
+    let statRollsCopy = statRolls.map(x => x);
+    let statsMsg = statsMsgArray.map(s => s);
+    console.log(`statsMsg in allocate initialized as: ${JSON.stringify(statsMsg)}`);
+    console.log(`statRollsCopy initialized as: ${JSON.stringify(statRollsCopy)}`);
+
+    // Sort statRollsCopy so highest is at end, makes it easy to use pop() later
+    statRollsCopy = statRollsCopy.sort((a,b) => a - b);
+    console.log(`statRollsCopy after sort = ${JSON.stringify(statRollsCopy)}`);
+    let receivedStats = [];
+    for (let i = 0; i < statsMsg.length; i++) {
+        let stat = statsMsg[i].toLowerCase();
+        stat.trim();
+        console.log(`allocate received ${stat}`);
+        if (receivedStats.includes(stat)) {
+            interaction.channel.send(`Cannot assign duplicate stats: ${stat}`);
+            return false;
+        }
+
+        let abililtyFound = false;
+        for (let ability in scores) {
+            if (stat.includes(ability)) {
+                // Assign the stat values based on the ability score
+                scores[ability] = statRollsCopy.pop();
+                abililtyFound = true;
+                break;
+            }
+        }
+        if (!abililtyFound) {
+            interaction.channel.send(`${stat} is not one of the ability scores`);
+            return false;
+        }
+    }
+    return scores;
+}
