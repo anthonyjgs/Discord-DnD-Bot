@@ -163,7 +163,7 @@ function raceAbilityScoreBonuses(race) {
     return bonuses;
 }
 
-// This module exports an object named data and an async function called execute
+// This module exports an object named data and an async function, execute
 module.exports = {
     // Set the command's name and description
 	data: new SlashCommandBuilder()
@@ -178,13 +178,17 @@ module.exports = {
             option.setName('race')
                 .setDescription('Your character\'s race')
                 .setRequired(true)
-                .addChoices(...Character.races.map(x => {return {name: x.name, value: x.name}}))
+                .addChoices(...Character.races.map(
+                    x => {return {name: x.Name, value: x.Name}}
+                ))
             )
         .addStringOption(option =>
             option.setName('class')
                 .setDescription('Your character\'s starting class')
                 .setRequired(true)
-                .addChoices(...Character.classes)
+                .addChoices(...Character.classes.map(
+                    x => {return {name: x.Name, value: x.Name}}
+                ))
             )
         ,
     
@@ -196,7 +200,7 @@ module.exports = {
      */
 	async execute(interaction) {
         // Create a character based on the options selected
-        const db = new Database('dnd.db', {verbose: console.log})
+        const db = new Database('dnd.db', {verbose: console.log});
 
         const userId = interaction.user.id;
         let userRow = db.prepare('SELECT * FROM Users WHERE id = ?').get(userId);
@@ -205,14 +209,15 @@ module.exports = {
             db.prepare('INSERT INTO Users(id) VALUES(?)').run(userId);
             userRow = db.prepare('SELECT * FROM Users WHERE id = ?').get(userId);
         }
-        // If the user row already specifies an active character, warn the user and cancel creation
+        // If the user row already specifies an active character, warn the user
+        // and cancel creation.
         if (userRow.active_character_id) {
             interaction.reply({content: 'You already have an active character!'});
             return;
         }
         // Retrieve the options and verify that name is correct
         let characterName = '';
-        characterName = interaction.options.getString('name')
+        characterName = interaction.options.getString('name');
         characterName = characterName.trim();
         if (!characterName.match(/[A-Za-z]/)) {
             interaction.reply('Invalid Name! The name must have an alphabetical character!');
@@ -224,7 +229,8 @@ module.exports = {
         console.log(`Character race: ${characterRace}`);
         console.log(`Character class: ${characterClass}`);
 
-        interaction.reply('Creating your character...')
+        // Makes it easy for future interaction messages to just use followup()
+        interaction.reply('Creating your character...');
 
         // Roll the new character's stats
         let statRolls = [];
@@ -237,26 +243,35 @@ module.exports = {
 
         interaction.channel.send(
             `You rolled these stat values: **${statRolls.join(', ')}**\n` +
-            'Assign your stats by sending a message with each ability score, starting with the one ' +
-            'you want to have the highest roll, and ending with the one you want to have the lowest roll.\n' +
-            'Example message: strength, dexterity, constitution, intelligence, wisdom, charisma'
+            'Assign your stats by sending a message with each ability score,' +
+            ' starting with the one you want to have the highest roll, and ' +
+            'ending with the one you want to have the lowest roll.\n' +
+            'Example message: strength, dexterity, constitution, ' +
+            'intelligence, wisdom, charisma'
         );
         
-        // TODO: Show the user their character's abililty score bonuses from race,
-        // ...inform them that if they get to choose atribute bonuses, that happens next
+        // TODO: Show user their character's abililty score bonuses from race,
+        // ...inform them that if they get to choose bonuses, that happens next
         const raceAbilityBonuses = raceAbilityScoreBonuses(characterRace);
         console.log(`raceAbilityBonuses: ${JSON.stringify(raceAbilityBonuses)}`);
-        interaction.channel.send(`${characterName} has the following ability score bonuses due to their race: ${JSON.stringify(raceAbilityBonuses)}`);
+        interaction.channel.send(
+            `${characterName} has the following ability score bonuses due to` +
+            ` their race: ${JSON.stringify(raceAbilityBonuses)}`
+        );
 
         // Receive the stats message from the user
         const filter = m => m.author.id == userId;
         let statsMsgValid = false;
         let statsMsg = '';
-        const statsUsage = 'Send your message like this: strength, dexterity, constitution, intelligence, wisdom, charisma';
+        const statsUsage = 'Send your message like this: strength, dexterity,' +
+            ' constitution, intelligence, wisdom, charisma';
         let abilityScores = {};
         while (!statsMsgValid) {
-            interaction.channel.send('Assign your stat rolls by sending a message with your stats from highest to lowest.')
-            statsMsg = await interaction.channel.awaitMessages({filter, max: 1})
+            interaction.channel.send(
+                'Assign your stat rolls by sending a message with your stats ' +
+                'from highest to lowest.'
+            );
+            statsMsg = await interaction.channel.awaitMessages({filter, max: 1});
             statsMsg = statsMsg.first().content;
             // Check if the stats msg is valid and prepare the array
             const statsMsgArray = statsMsg.split(',');
@@ -275,10 +290,13 @@ module.exports = {
             abilityScores[`${ability}`] += raceAbilityBonuses[ability];
         }
 
-        // TODO: Prompt to add remaining ability score bonuses, if any (like when human race gives you points to freely allocate)
+        // TODO: Prompt to add remaining ability score bonuses, if any (like 
+        // when the human race gives you points to freely allocate)
 
         // Finally, display the final ability scores
-        interaction.channel.send(`${characterName}'s final ability scores: \n${JSON.stringify(abilityScores)}`)
+        interaction.channel.send(
+            `${characterName}'s final ability scores: \n${JSON.stringify(abilityScores)}`
+        );
 
         // TODO: Starting Equipment/Money
 
@@ -303,13 +321,31 @@ module.exports = {
         db.prepare('INSERT INTO Characters(owner_id, name) VALUES(?, ?)').run(userId, characterName);
         const characterId = db.prepare('SELECT character_id FROM Characters WHERE owner_id = ? AND name = ?').get(userId, characterName).character_id;
         // Fill the Statblocks
-        db.prepare('INSERT INTO Statblocks(id, race, class, strength, dexterity, constitution, intelligence, wisdom, charisma) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)')
-            .run(characterId, characterRace, characterClass, abilityScores.str, abilityScores.dex, abilityScores.con, abilityScores.int, abilityScores.wis, abilityScores.cha);
-        db.prepare('UPDATE Users SET active_character_id = ? WHERE id = ?').run(characterId, userId);
+        db.prepare(
+            'INSERT INTO Statblocks(' +
+            'id, race, class, strength, dexterity, constitution, intelligence, wisdom, charisma' +
+            ') VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        ).run(
+            characterId,
+            characterRace,
+            characterClass,
+            abilityScores.str,
+            abilityScores.dex,
+            abilityScores.con,
+            abilityScores.int,
+            abilityScores.wis,
+            abilityScores.cha
+        );
+        db.prepare('UPDATE Users SET active_character_id = ? WHERE id = ?')
+            .run(characterId, userId);
 
         // TODO: Initialize character at level 1
         // Confirm to the user that the character was created
-        await interaction.followUp(`Created your new character, **${characterName} the ${characterRace} ${characterClass.toLowerCase()}**.\n`);
+        await interaction.followUp(
+            `Created your new character, **${characterName} the ` +
+            `${characterRace} ${characterClass.toLowerCase()}**.\n`
+        );
+
         db.close();
         return;
 	},

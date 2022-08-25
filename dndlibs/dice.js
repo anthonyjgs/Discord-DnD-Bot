@@ -17,7 +17,6 @@ function rollDiceString(diceString) {
     diceString.trim();
     // Matches only dice strings
     diceString = diceString.match(/^((\d*d)|d)((?<=d)\d*|(?<=\d)d){0,3}\d*$/)[0];
-    console.log(`diceString after match is: ${diceString}`);
     if (!diceString) {
         console.log(usageString);
         return [false, usageString];
@@ -25,7 +24,6 @@ function rollDiceString(diceString) {
 
     // Split the dice string around 'd'
     let diceArray = diceString.split('d');
-    console.log(`diceArray initialized to: ${JSON.stringify(diceArray)}`);
     // If diceString was d# or #d# or #d#d#
     if (diceArray.length == 1) return rollDice(1, diceArray[0]);
     else if (diceArray.length == 2) return rollDice(diceArray[0], diceArray[1]);
@@ -66,16 +64,12 @@ function rollDice(quantity, sides, drop = 0) {
     for (let i = 0; i < quantity; i++) {
         resultsArray[i] = Math.floor(Math.random() * sides) + 1;
     }
-
     // Sort the array by numerical value (not ascii character value, which is the default)
     resultsArray.sort((a,b) => a - b).reverse();
-    console.log(`resultsArray before drop: ${JSON.stringify(resultsArray)}`);
     // Drop rolls if necessary
     for (let i = 0; i < drop; i++) {
         resultsArray.pop();
     }
-    console.log(`resultsArray after drop: ${JSON.stringify(resultsArray)}`);
-
     return resultsArray;
 }
 

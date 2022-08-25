@@ -1,82 +1,82 @@
 {
-    "name": "Barbarian",
-    "hitDice": "1d12",
-    "startingHP": 12,
+    "Name": "Barbarian",
+    "HitDice": "1d12",
+    "StartingHP": 12,
 
-    "proficiencies": [
+    "Proficiencies": [
         "lightArmor", "mediumArmor", "shields",
         "simpleWeapons", "martialWeapons"
     ],
 
-    "savingThrows": ["str", "con"],
-    "freeSkills": 2,
-    "potentionalSkills": ["animalHandling", "athletics", "intimidation", "nature", "perception", "survival"],
+    "SavingThrows": ["str", "con"],
+    "FreeSkills": 2,
+    "PotentionalSkills": ["animalHandling", "athletics", "intimidation", "nature", "perception", "survival"],
     
-    "startingEquipment": {
-        "option1": ["greataxe", "anyMartialMeleeWeapon"],
-        "option2": ["2_handaxe", "anySimpleWeapon"],
-        "given": ["explorersPack", "4_javelin"]
+    "StartingEquipment": {
+        "Option1": ["greataxe", "anyMartialMeleeWeapon"],
+        "Option2": ["2_handaxe", "anySimpleWeapon"],
+        "Given": ["explorersPack", "4_javelin"]
     },
 
     "Levels": {
-        "level1": {
+        "Level1": {
             "Features": ["rage", "unarmoredDefense"]
         },
-        "level2": {
+        "Level2": {
             "Features": ["recklessAttack", "dangerSense"]
         },
-        "level3": {
+        "Level3": {
             "Features": ["primalPath"]
         },
-        "level4": {
+        "Level4": {
             "Features": ["abilityScoreImprovement"]
         },
-        "level5": {
+        "Level5": {
             "Features": ["extraAttack", "fastMovement"]
         },
-        "level6": {
+        "Level6": {
             "Features": ["pathFeature"]
         },
-        "level7": {
+        "Level7": {
             "Features": ["feralInstinct"]
         },
-        "level8": {
+        "Level8": {
             "Features": ["abilityScoreImprovement"]
         },
-        "level9": {
+        "Level9": {
             "Features": ["brutalCritical1"]
         },
-        "level10": {
+        "Level10": {
             "Features": ["pathFeature"]
         },
-        "level11": {
+        "Level11": {
             "Features": ["relentlessRage"]
         },
-        "level12": {
+        "Level12": {
             "Features": ["abilityScoreImprovement"]
         },
-        "level13": {
+        "Level13": {
             "Features": ["brutalCritical2"]
         },
-        "level14": {
+        "Level14": {
             "Features": ["pathFeature"]
         },
-        "level15": {
+        "Level15": {
             "Features": ["persistentRage"]
         },
-        "level16": {
+        "Level16": {
             "Features": ["abilityScoreImprovement"]
         },
-        "level17": {
+        "Level17": {
             "Features": ["brutalCritical3"]
         },
-        "level18": {
+        "Level18": {
             "Features": ["indomitableMight"]
         },
-        "level19": {
+        "Level19": {
             "Features": ["abilityScoreImprovement"]
         },
-        "level20": {
+        "Level20": {
             "Features": ["primalChampion"]
         }
     }
