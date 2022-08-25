@@ -17,7 +17,7 @@ The majority of interaction is via bot commands in chat, and as such the
 intended use is within a seperate text channel meant specifically for the
 Discord Dungeon Master and user characters.
 
-## Instalation:
+## Installation:
 
 ## Setup:
 
