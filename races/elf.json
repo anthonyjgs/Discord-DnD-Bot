@@ -1,0 +1,14 @@
+{
+    // TODO:
+    "Name": "Elf",
+    "AbilityScoreBonuses": {},
+    "Speed": 30,
+    "Features": [],
+    "Languages": ["common", "elvish"],
+
+    "SubRaces": [
+        "Dark",
+        "High",
+        "Wood"
+    ]
+}
