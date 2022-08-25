@@ -2,41 +2,82 @@
     "name": "Barbarian",
     "hitDice": "1d12",
     "startingHP": 12,
+
     "proficiencies": [
         "lightArmor", "mediumArmor", "shields",
         "simpleWeapons", "martialWeapons"
     ],
+
     "savingThrows": ["str", "con"],
     "freeSkills": 2,
     "potentionalSkills": ["animalHandling", "athletics", "intimidation", "nature", "perception", "survival"],
+    
     "startingEquipment": {
         "option1": ["greataxe", "anyMartialMeleeWeapon"],
         "option2": ["2_handaxe", "anySimpleWeapon"],
-        "given": [
-            "explorersPack",
-            "4_javelin"
-        ]
+        "given": ["explorersPack", "4_javelin"]
     },
-    "Features": {
-        "level1": ["rage", "unarmoredDefense"],
-        "level2": ["recklessAttack", "dangerSense"],
-        "level3": ["primalPath"],
-        "level4": ["abilityScoreImprovement"],
-        "level5": ["extraAttack", "fastMovement"],
-        "level6": ["pathFeature"],
-        "level7": ["feralInstinct"],
-        "level8": ["abilityScoreImprovement"],
-        "level9": ["brutalCritical1"],
-        "level10": ["pathFeature"],
-        "level11": ["relentlessRage"],
-        "level12": ["abilityScoreImprovement"],
-        "level13": ["brutalCritical2"],
-        "level14": ["pathFeature"],
-        "level15": ["persistentRage"],
-        "level16": ["abilityScoreImprovement"],
-        "level17": ["brutalCritical3"],
-        "level18": ["indomitableMight"],
-        "level19": ["abilityScoreImprovement"],
-        "level20": ["primalChampion"]
+
+    "Levels": {
+        "level1": {
+            "Features": ["rage", "unarmoredDefense"]
+        },
+        "level2": {
+            "Features": ["recklessAttack", "dangerSense"]
+        },
+        "level3": {
+            "Features": ["primalPath"]
+        },
+        "level4": {
+            "Features": ["abilityScoreImprovement"]
+        },
+        "level5": {
+            "Features": ["extraAttack", "fastMovement"]
+        },
+        "level6": {
+            "Features": ["pathFeature"]
+        },
+        "level7": {
+            "Features": ["feralInstinct"]
+        },
+        "level8": {
+            "Features": ["abilityScoreImprovement"]
+        },
+        "level9": {
+            "Features": ["brutalCritical1"]
+        },
+        "level10": {
+            "Features": ["pathFeature"]
+        },
+        "level11": {
+            "Features": ["relentlessRage"]
+        },
+        "level12": {
+            "Features": ["abilityScoreImprovement"]
+        },
+        "level13": {
+            "Features": ["brutalCritical2"]
+        },
+        "level14": {
+            "Features": ["pathFeature"]
+        },
+        "level15": {
+            "Features": ["persistentRage"]
+        },
+        "level16": {
+            "Features": ["abilityScoreImprovement"]
+        },
+        "level17": {
+            "Features": ["brutalCritical3"]
+        },
+        "level18": {
+            "Features": ["indomitableMight"]
+        },
+        "level19": {
+            "Features": ["abilityScoreImprovement"]
+        },
+        "level20": {
+            "Features": ["primalChampion"]
+        }
     }
 }

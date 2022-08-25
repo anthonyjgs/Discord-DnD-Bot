@@ -1,0 +1,20 @@
+{
+    "Name": "Dragonborn",
+    "AbilityScoreBonuses": {"str": 2, "cha": 1},
+    "Speed": 30,
+    "Features": ["breathWeapon", "damageResistance"],
+    "Languages": ["common", "draconic"],
+
+    "SubRaces": [
+        "Black",
+        "Blue",
+        "Brass",
+        "Bronze",
+        "Copper",
+        "Gold",
+        "Green",
+        "Red",
+        "Silver",
+        "White"
+    ]
+}

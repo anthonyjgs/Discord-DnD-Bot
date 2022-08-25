@@ -14,12 +14,9 @@
         "option2": ["scaleMail", "leatherArmor", "chainMail"],
         "option3": [["lightCrossbow", "20_crossbowBolt"], "anySimpleWeapon"],
         "option4": ["priestsPack", "explorersPack"],
-        "given": [
-            "shield",
-            "holySymbol"
-        ]
+        "given": ["shield", "holySymbol"]
     },
-    
+
     "Levels": {
         "level1": {
             "Features": ["spellcasting", "divineDomain"],
@@ -30,7 +27,6 @@
             "spellSlots": {"spellLevel1": 3}
         },
         "level3": {
-            "Features": [],
             "spellSlots": {"spellLevel1": 4, "spellLevel2": 2}
         },
         "level4": {
@@ -46,7 +42,6 @@
             "spellSlots": {"spellLevel3": 3}
         },
         "level7": {
-            "Features": [],
             "spellSlots": {"spellLevel4": 1}
         },
         "level8": {
@@ -54,7 +49,6 @@
             "spellSlots": {"spellLevel4": 2}
         },
         "level9": {
-            "Features": [],
             "spellSlots": {"spellLevel4": 3, "spellLevel5": 1}
         },
         "level10": {
@@ -66,24 +60,19 @@
             "spellSlots": {"spellLevel6": 1}
         },
         "level12": {
-            "Features": ["abilityScoreImprovement"],
-            "spellSlots": {}
+            "Features": ["abilityScoreImprovement"]
         },
         "level13": {
-            "Features": [],
             "spellSlots": {"spellLevel7": 1}
         },
         "level14": {
-            "Features": ["destroyUndead4"],
-            "spellSlots": {}
+            "Features": ["destroyUndead4"]
         },
         "level15": {
-            "Features": [],
             "spellSlots": {"spellLevel8": 1}
         },
         "level16": {
-            "Features": ["abilityScoreImprovement"],
-            "spellSlots": {}
+            "Features": ["abilityScoreImprovement"]
         },
         "level17": {
             "Features": ["destroyUndead5", "divineDomainFeature"],

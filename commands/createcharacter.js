@@ -5,6 +5,7 @@
 const { SlashCommandBuilder, BaseInteraction } = require('discord.js');
 const Database = require('better-sqlite3');
 const Dice = require('../dndlibs/dice');
+const Character = require('../dndlibs/character');
 
 /**
  * Checks ability scores and, if valid, returns an object with each ability score allocated via properties
@@ -49,7 +50,7 @@ function allocateAbilityScores(statsMsgArray, statRolls, interaction) {
     return scores;
 }
 
-// TODO: Insert raceAbilityScoreBonuses from character library
+// TODO: Insert raceAbilityScoreBonuses from character library after moving it
 
 /**
  * Returns an array of the ability score bonuses based on race
@@ -177,50 +178,13 @@ module.exports = {
             option.setName('race')
                 .setDescription('Your character\'s race')
                 .setRequired(true)
-                .addChoices(
-                    {name: 'Black Dragonborn', value: 'Black Dragonborn'},
-                    {name: 'Blue Dragonborn', value: 'Blue Dragonborn'},
-                    {name: 'Brass Dragonborn', value: 'Brass Dragonborn'},
-                    {name: 'Bronze Dragonborn', value: 'Bronze Dragonborn'},
-                    {name: 'Copper Dragonborn', value: 'Copper Dragonborn'},
-                    {name: 'Gold Dragonborn', value: 'Gold Dragonborn'},
-                    {name: 'Green Dragonborn', value: 'Green Dragonborn'},
-                    {name: 'Red Dragonborn', value: 'Red Dragonborn'},
-                    {name: 'Silver Dragonborn', value: 'Silver Dragonborn'},
-                    {name: 'White Dragonborn', value: 'White Dragonborn'},
-                    {name: 'Hill Dwarf', value: 'Hill Dwarf'},
-                    {name: 'Mountain Dwarf', value: 'Mountain Dwarf'},
-                    {name: 'Dark Elf (Drow)', value: 'Dark Elf'},
-                    {name: 'High Elf', value: 'High Elf'},
-                    {name: 'Wood Elf', value: 'Wood Elf'},
-                    {name: 'Forest Gnome', value: 'Forest Gnome'},
-                    {name: 'Rock Gnome', value: 'Rock Gnome'},
-                    {name: 'Half-Elf', value: 'Half-Elf'},
-                    {name: 'Half-Orc', value: 'Half-Orc'},
-                    {name: 'Lightfoot Halfling', value: 'Lightfoot Halfling'},
-                    {name: 'Stout Halfling', value: 'Stout Halfling'},
-                    {name: 'Human', value: 'Human'},
-                    {name: 'Tiefling', value: 'Tiefling'},
-                )
+                .addChoices(...Character.races.map(x => {return {name: x.name, value: x.name}}))
             )
         .addStringOption(option =>
             option.setName('class')
                 .setDescription('Your character\'s starting class')
                 .setRequired(true)
-                .addChoices(
-                    {name: 'Barbarian', value: 'Barbarian'},
-                    {name: 'Bard', value: 'Bard'},
-                    {name: 'Cleric', value: 'Cleric'},
-                    {name: 'Druid', value: 'Druid'},
-                    {name: 'Fighter', value: 'Fighter'},
-                    {name: 'Monk', value: 'Monk'},
-                    {name: 'Paladin', value: 'Paladin'},
-                    {name: 'Ranger', value: 'Ranger'},
-                    {name: 'Rogue', value: 'Rogue'},
-                    {name: 'Sorcerer', value: 'Sorcerer'},
-                    {name: 'Warlock', value: 'Warlock'},
-                    {name: 'Wizard', value: 'Wizard'},
-                )
+                .addChoices(...Character.classes)
             )
         ,
     
@@ -271,10 +235,13 @@ module.exports = {
             statRolls.push(Dice.rollDice(4, 6, 1).reduce((a, b) => a + b, 0));
         }
 
-        interaction.channel.send(`You rolled these stat values: **${statRolls.join(', ')}**\n` +
-                                 'Assign your stats by sending a message with each ability score, starting with the one ' +
-                                 ' you want to have the highest roll, and ending with the one you want to have the lowest roll.\n' +
-                                 'Example message: strength, dexterity, constitution, intelligence, wisdom, charisma');
+        interaction.channel.send(
+            `You rolled these stat values: **${statRolls.join(', ')}**\n` +
+            'Assign your stats by sending a message with each ability score, starting with the one ' +
+            'you want to have the highest roll, and ending with the one you want to have the lowest roll.\n' +
+            'Example message: strength, dexterity, constitution, intelligence, wisdom, charisma'
+        );
+        
         // TODO: Show the user their character's abililty score bonuses from race,
         // ...inform them that if they get to choose atribute bonuses, that happens next
         const raceAbilityBonuses = raceAbilityScoreBonuses(characterRace);
