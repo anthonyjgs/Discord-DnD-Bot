@@ -17,15 +17,18 @@ module.exports = {
             option.setName('name')
                 .setDescription('Your character\'s name')
                 .setRequired(true)
-            )
+        )
+        // TODO: Incorporate subraces here, and add some comments
         .addStringOption(option =>
             option.setName('race')
                 .setDescription('Your character\'s race')
                 .setRequired(true)
-                .addChoices(...Character.races.map(
-                    x => {return {name: x.Name, value: x.Name}}
-                ))
-            )
+                .addChoices(...Character.getAllSubRaceNames().map(
+                    raceName => {return {name: raceName, value: raceName};}
+                    )
+                )
+        )
+
         .addStringOption(option =>
             option.setName('class')
                 .setDescription('Your character\'s starting class')
@@ -67,12 +70,16 @@ module.exports = {
             return;
         }
 
-        const raceString = interaction.options.getString('race');
-        const characterRace = Character.races.find(o => o.Name == raceString);
+        // raceStrings is an array of format [subRace, Race]
+        const raceStrings = interaction.options.getString('race').split(' ');
+        // both primary race and subrace are the relevant race objects
+        const primaryRace = Character.races.find(o => o.Name == raceStrings[1]);
+        const subRace = primaryRace.SubRaces.find(o => o.Name == raceStrings[0]);
+
         const classString = interaction.options.getString('class');
         const characterClass = Character.classes.find(o => o.Name == classString);
-        console.log(`Character race: ${characterRace}`);
-        console.log(`Character class: ${characterClass}`);
+        console.log(`Character race: ${subRace.Name} ${primaryRace.Name}`);
+        console.log(`Character class: ${characterClass.Name}`);
 
         // Makes it easy for future interaction messages to just use followup()
         interaction.reply('Creating your character...');
@@ -97,7 +104,7 @@ module.exports = {
         
         // TODO: Show user their character's abililty score bonuses from race,
         // ...inform them that if they get to choose bonuses, that happens next
-        const raceAbilityBonuses = characterRace.AbilityScoreBonuses;
+        const raceAbilityBonuses = Character.getAbilityBonuses(primaryRace, subRace);
         console.log(`raceAbilityBonuses: ${JSON.stringify(raceAbilityBonuses)}`);
         interaction.channel.send(
             `${characterName} has the following ability score bonuses due to` +
@@ -107,7 +114,6 @@ module.exports = {
         // Receive the stats message from the user
         const filter = m => m.author.id == userId;
         let statsMsgValid = false;
-        let statsMsg = '';
         const statsUsage = 'Send your message like this: strength, dexterity,' +
             ' constitution, intelligence, wisdom, charisma';
         let abilityScores = {};
@@ -116,7 +122,7 @@ module.exports = {
                 'Assign your stat rolls by sending a message with your stats ' +
                 'from highest to lowest.'
             );
-            statsMsg = await interaction.channel.awaitMessages({filter, max: 1});
+            let statsMsg = await interaction.channel.awaitMessages({filter, max: 1});
             statsMsg = statsMsg.first().content;
             // Check if the stats msg is valid and prepare the array
             const statsMsgArray = statsMsg.split(',');
@@ -175,7 +181,7 @@ module.exports = {
             ') VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)'
         ).run(
             characterId,
-            characterRace,
+            `${subRace.Name} ${primaryRace.Name}`,
             characterClass,
             abilityScores.str,
             abilityScores.dex,
@@ -192,7 +198,8 @@ module.exports = {
         // Confirm to the user that the character was created
         await interaction.followUp(
             `Created your new character, **${characterName} the ` +
-            `${characterRace} ${characterClass.toLowerCase()}**.\n`
+            `${subRace.Name} ${primaryRace.Name} ` + 
+            `${characterClass.toLowerCase()}**.`
         );
 
         db.close();
@@ -208,33 +215,24 @@ module.exports = {
  * @param {Array} statRolls The roll values to use for stat allocation, in order from highest to lowest
  */
  function allocateAbilityScores(statsMsgArray, statRolls, interaction) {
-    let scores = {
-        str: 0,
-        dex: 0,
-        con: 0,
-        int: 0,
-        wis: 0,
-        cha: 0
-    };
+    let scores = {str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0};
     // Make a copy of statRolls so the original is not modified
-    let statRollsCopy = statRolls.map(x => x);
-    let statsMsg = statsMsgArray.map(s => s);
-    console.log(`statsMsg in allocate initialized as: ${JSON.stringify(statsMsg)}`);
-    console.log(`statRollsCopy initialized as: ${JSON.stringify(statRollsCopy)}`);
+    let statRollsCopy = [...statRolls];
+    let statsMsg = [...statsMsgArray];
 
     // Sort statRollsCopy so highest is at end, makes it easy to use pop() later
     statRollsCopy = statRollsCopy.sort((a,b) => a - b);
-    console.log(`statRollsCopy after sort = ${JSON.stringify(statRollsCopy)}`);
     let receivedStats = [];
-    for (let i = 0; i < statsMsg.length; i++) {
-        let stat = statsMsg[i].toLowerCase();
+    for (let stat of statsMsg) {
         stat.trim();
+        stat = stat.toLowerCase();
         console.log(`allocate received ${stat}`);
         if (receivedStats.includes(stat)) {
             interaction.channel.send(`Cannot assign duplicate stats: ${stat}`);
             return false;
         }
-
+        receivedStats.push(stat);
+        
         let abililtyFound = false;
         for (let ability in scores) {
             if (stat.includes(ability)) {

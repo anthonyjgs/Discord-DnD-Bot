@@ -1,83 +1,83 @@
 {
-    "Name": "Barbarian",
-    "HitDice": "1d12",
-    "StartingHP": 12,
+    "name": "Barbarian",
+    "hitDice": "1d12",
+    "startingHP": 12,
 
-    "Proficiencies": [
+    "proficiencies": [
         "lightArmor", "mediumArmor", "shields",
         "simpleWeapons", "martialWeapons"
     ],
 
-    "SavingThrows": ["str", "con"],
-    "FreeSkills": 2,
-    "PotentionalSkills": ["animalHandling", "athletics", "intimidation", "nature", "perception", "survival"],
+    "savingThrows": ["str", "con"],
+    "freeSkills": 2,
+    "potentionalSkills": ["animalHandling", "athletics", "intimidation", "nature", "perception", "survival"],
     
-    "StartingEquipment": {
-        "Option1": ["greataxe", "anyMartialMeleeWeapon"],
-        "Option2": ["2_handaxe", "anySimpleWeapon"],
-        "Given": ["explorersPack", "4_javelin"]
+    "startingEquipment": {
+        "option1": ["greataxe", "anyMartialMeleeWeapon"],
+        "option2": ["2_handaxe", "anySimpleWeapon"],
+        "given": ["explorersPack", "4_javelin"]
     },
 
-    "Levels": {
-        "Level1": {
-            "Features": ["rage", "unarmoredDefense"]
+    "levels": {
+        "level1": {
+            "features": ["rage", "unarmoredDefense"]
         },
-        "Level2": {
-            "Features": ["recklessAttack", "dangerSense"]
+        "level2": {
+            "features": ["recklessAttack", "dangerSense"]
         },
-        "Level3": {
-            "Features": ["primalPath"]
+        "level3": {
+            "features": ["primalPath"]
         },
-        "Level4": {
-            "Features": ["abilityScoreImprovement"]
+        "level4": {
+            "features": ["abilityScoreImprovement"]
         },
-        "Level5": {
-            "Features": ["extraAttack", "fastMovement"]
+        "level5": {
+            "features": ["extraAttack", "fastMovement"]
         },
-        "Level6": {
-            "Features": ["pathFeature"]
+        "level6": {
+            "features": ["pathFeature"]
         },
-        "Level7": {
-            "Features": ["feralInstinct"]
+        "level7": {
+            "features": ["feralInstinct"]
         },
-        "Level8": {
-            "Features": ["abilityScoreImprovement"]
+        "level8": {
+            "features": ["abilityScoreImprovement"]
         },
-        "Level9": {
-            "Features": ["brutalCritical1"]
+        "level9": {
+            "features": ["brutalCritical1"]
         },
-        "Level10": {
-            "Features": ["pathFeature"]
+        "level10": {
+            "features": ["pathFeature"]
         },
-        "Level11": {
-            "Features": ["relentlessRage"]
+        "level11": {
+            "features": ["relentlessRage"]
         },
-        "Level12": {
-            "Features": ["abilityScoreImprovement"]
+        "level12": {
+            "features": ["abilityScoreImprovement"]
         },
-        "Level13": {
-            "Features": ["brutalCritical2"]
+        "level13": {
+            "features": ["brutalCritical2"]
         },
-        "Level14": {
-            "Features": ["pathFeature"]
+        "level14": {
+            "features": ["pathFeature"]
         },
-        "Level15": {
-            "Features": ["persistentRage"]
+        "level15": {
+            "features": ["persistentRage"]
         },
-        "Level16": {
-            "Features": ["abilityScoreImprovement"]
+        "level16": {
+            "features": ["abilityScoreImprovement"]
         },
-        "Level17": {
-            "Features": ["brutalCritical3"]
+        "level17": {
+            "features": ["brutalCritical3"]
         },
-        "Level18": {
-            "Features": ["indomitableMight"]
+        "level18": {
+            "features": ["indomitableMight"]
         },
-        "Level19": {
-            "Features": ["abilityScoreImprovement"]
+        "level19": {
+            "features": ["abilityScoreImprovement"]
         },
-        "Level20": {
-            "Features": ["primalChampion"]
+        "level20": {
+            "features": ["primalChampion"]
         }
     }
 }

@@ -19,6 +19,22 @@ const path = require("node:path");
     return objects;
 }
 
+/**
+ * Creates an array of objects from all of the js files at dirPath
+ * @param {String} dirPath 
+ * @returns {Array} An array of objects, one for each js file at dirPath
+ */
+function objArrayFromJS(dirPath) {
+    const files = fs.readdirSync(dirPath).filter(file => file.endsWith(".js"));
+    let objects = [];
+    for (const file of files) {
+        const filePath = path.join(dirPath, file);
+        objects.push(require(filePath));
+    }
+    return objects;
+}
+
 module.exports = {
-    objArrayFromJSON
+    objArrayFromJS,
+    objArrayFromJSON,
 }
