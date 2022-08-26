@@ -5,5 +5,3 @@
 node_modules
 
 .eslintrc.json
-
-/commandtemplate.js

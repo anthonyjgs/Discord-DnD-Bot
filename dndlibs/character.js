@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // Collection of functions and objects for characters
 
 const Path = require('node:path');
@@ -105,6 +106,15 @@ class Character {
         const race = this.getRace().split(' ');
         if (race.length == 1) return race[0];
         else if (race.length == 2) return race[1];
+    }
+
+    /**
+     * Get a reference to the primary race object file
+     * @returns {Object} The race object from file
+     */
+    getPrimaryRaceObj() {
+        const race = this.getPrimaryRace();
+        return races.find(o => o.Name == race);
     }
 
     getProficiencies() {

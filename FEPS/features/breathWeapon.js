@@ -1,45 +1,44 @@
+// eslint-disable-next-line no-unused-vars
 const Character = require('../../dndlibs/character');
 
 /** Tweak description to reflect the specifics of the calling character
  * @param {Character.Character} character The character useing this feature
  * @returns 
  */
-function getDescription(character) {
-    let descriptionString = 'Breath attack! Bwah!';
-    return descriptionString;
+function descriptionEdits(character) {
+    const raceObj = character.getPrimaryRaceObj();
+    const subrace = character.getSubRace.toLowerCase();
+    const damageType = raceObj.damageType(subrace);
+    return `Your breath weapon deals ${damageType} damage.`;
 }
 
 
 module.exports = {
     name: 'Breath Weapon',
-    description: getDescription(this) || ('You can use your action to exhale',
-        'destructive energy. Your draconic ancestry determines the size,',
-        'shape, and damage type of the exhalation.'),
+    description: (
+        'You can use your action to exhale destructive energy. Your draconic',
+        'ancestry determines the size, shape, and damage type of the',
+        `exhalation.\n${descriptionEdits()}`
+    ),
+
     /**
      * 
      * @param {Character.Character} character 
+     * @param {*} target The target of the breath attack
      */
-    use(character) {
+    use(character, target=null) {
         if (character.getRace().toLowerCase() != "dragonborn") throw console.error(
             `${character.name} is not a Dragonborn!`);
-        
+
+        const raceObj = character.getPrimaryRaceObj();
         const ancestry = character.getSubRace().toLowerCase();
-        const damageType = new String(() => {
-            switch (ancestry) {
-                case ('black' || 'copper'):
-                    return 'acid';
-                case ('blue' || 'bronze'):
-                    return 'lightning';
-                case ('brass' || 'gold' || 'red'):
-                    return 'fire';
-                case 'green':
-                    return 'poison';
-                case ('silver' || 'white'):
-                    return 'cold';
-                default:
-                    throw console.error(`Dragonborn subrace missing from `+
-                        `breathweapon damagetype! ${ancestry}`);
-            }
-        });
-    }
+        const damageType = raceObj.damageType(ancestry);
+
+        if (target) {
+            // TODO: Check if target is within range and deal damage
+        }
+
+        return `${character.name} used their ${damageType} breath weapon!`;
+    },
+    
 }
