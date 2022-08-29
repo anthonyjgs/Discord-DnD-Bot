@@ -34,7 +34,7 @@ module.exports = {
                 .setDescription('Your character\'s starting class')
                 .setRequired(true)
                 .addChoices(...Character.classes.map(
-                    x => {return {name: x.Name, value: x.Name}}
+                    x => {return {name: x.name, value: x.name}}
                 ))
             )
         ,
@@ -73,13 +73,13 @@ module.exports = {
         // raceStrings is an array of format [subRace, Race]
         const raceStrings = interaction.options.getString('race').split(' ');
         // both primary race and subrace are the relevant race objects
-        const primaryRace = Character.races.find(o => o.Name == raceStrings[1]);
-        const subRace = primaryRace.SubRaces.find(o => o.Name == raceStrings[0]);
+        const primaryRace = Character.races.find(o => o.name == raceStrings[1]);
+        const subRace = primaryRace.subRaces.find(o => o.name == raceStrings[0]);
 
         const classString = interaction.options.getString('class');
-        const characterClass = Character.classes.find(o => o.Name == classString);
-        console.log(`Character race: ${subRace.Name} ${primaryRace.Name}`);
-        console.log(`Character class: ${characterClass.Name}`);
+        const characterClass = Character.classes.find(o => o.name == classString);
+        console.log(`Character race: ${subRace.name} ${primaryRace.name}`);
+        console.log(`Character class: ${characterClass.name}`);
 
         // Makes it easy for future interaction messages to just use followup()
         interaction.reply('Creating your character...');
@@ -168,7 +168,8 @@ module.exports = {
             }
         }
 
-        // TODO: Insert the stats into the database
+        // TODO: Insert the stats into the database (NEEDS REWRITE)
+        /*
         db.prepare('INSERT INTO Characters(owner_id, name) VALUES(?, ?)')
             .run(userId, characterName);
         const characterId = db.prepare(
@@ -181,7 +182,7 @@ module.exports = {
             ') VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)'
         ).run(
             characterId,
-            `${subRace.Name} ${primaryRace.Name}`,
+            `${subRace.name} ${primaryRace.name}`,
             characterClass,
             abilityScores.str,
             abilityScores.dex,
@@ -192,14 +193,14 @@ module.exports = {
         );
         db.prepare('UPDATE Users SET active_character_id = ? WHERE id = ?')
             .run(characterId, userId);
-
+        */
         // TODO: Initialize character at level 1
 
         // Confirm to the user that the character was created
         await interaction.followUp(
             `Created your new character, **${characterName} the ` +
-            `${subRace.Name} ${primaryRace.Name} ` + 
-            `${characterClass.toLowerCase()}**.`
+            `${subRace.name} ${primaryRace.name} ` + 
+            `${characterClass.name.toLowerCase()}**.`
         );
 
         db.close();
@@ -226,7 +227,7 @@ module.exports = {
     for (let stat of statsMsg) {
         stat.trim();
         stat = stat.toLowerCase();
-        console.log(`allocate received ${stat}`);
+
         if (receivedStats.includes(stat)) {
             interaction.channel.send(`Cannot assign duplicate stats: ${stat}`);
             return false;

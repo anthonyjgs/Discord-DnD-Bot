@@ -18,8 +18,8 @@ const races = Utility.objArrayFromJS(racesPath);
 function getAllSubRaceNames() {
     let subraceArray = [];
     for (const race of races) {
-        for (const subrace of race.SubRaces) {
-            const raceString = `${subrace.Name} ${race.Name}`;
+        for (const subrace of race.subRaces) {
+            const raceString = `${subrace.name} ${race.name}`;
             subraceArray.push(raceString);
         }
     }
@@ -32,20 +32,38 @@ function getAllSubRaceNames() {
  * @returns {Object}
  */
 function getAbilityBonuses(primaryRace, subRace=null) {
-    let bonuses = primaryRace.AbilityScoreBonuses;
+    let bonuses = primaryRace.abilityScoreBonuses;
     if (subRace) {
-        for (const bonus in subRace.AbilityScoreBonuses) {
+        for (const bonus in subRace.abilityScoreBonuses) {
             bonuses[bonus] ? bonuses[bonus] += bonus : bonuses[bonus] = bonus;
         }
     }
-    return bonuses
+    return bonuses;
 }
 
 // Classes
 const classesPath = Path.resolve('dndlibs', '..', 'classes');
 const classes = Utility.objArrayFromJSON(classesPath);
 
+// Creating a character object
+function characterObjectFromUserId(userId) {
+    const db = new Database(dbFile, {verbose: console.log});
+    const stmt =
+        db.prepare('SELECT active_character_id FROM users WHERE id = ?');
+    const activeCharacterId = stmt.get(userId).active_character_id;
+    db.close();
+
+    if (activeCharacterId) {
+        return new Character(activeCharacterId);
+    } else {
+        // NO ACTIVE CHARACTER
+        return undefined
+    }
+    
+}
+
 /**
+ * The class for characters
  * @param characterId The id to make a Character object from.
  */
 class Character {
@@ -83,12 +101,58 @@ class Character {
         return scores;
     }
 
+    // TODO: Can make most of these into their own functions at some point
     getCharacterSheet() {
+        const db = new Database(dbFile, {verbose: console.log});
+        const id = this.id;
+        // General Character Stats
+        let stmt = db.prepare('SELECT * FROM characters WHERE id = ?');
+        const characterRow = stmt.get(id);
+        // Ability Scores
+        stmt = db.prepare('SELECT * FROM abilityScores WHERE id = ?');
+        const abilityRow = stmt.get(id);
+        delete abilityRow.id;
+        // Features
+        stmt = db.prepare('SELECT displayName FROM features WHERE character_id = ?');
+        const features = stmt.all(id).map(o => o.displayName);
+        // Proficiencies
+        stmt = db.prepare('SELECT displayName FROM proficiencies WHERE character_id = ?');
+        const proficiencies = stmt.all(id).map(o => o.displayName);
+        // Inventory
+        stmt = db.prepare('SELECT displayName FROM inventory WHERE character_id = ?');
+        const inventory = stmt.all(id).map(o => o.displayName);
+        // Saving Throws
+        stmt = db.prepare('SELECT savingThrow FROM savingThrows WHERE character_id = ?');
+        const savingThrows = stmt.all(id).map(o => o.savingThrow);
+        // Spell Slots
+        stmt.prepare('SELECT * FROM spellSlots WHERE character_id = ?');
+        const spellSlots = stmt.get(id);
+        delete spellSlots.character_id;
+        // Spells
+        stmt.prepare('SELECT displayName FROM spells WHERE character_id = ?');
+        const spells = stmt.all(id).map(o => o.displayName);
 
+        // TODO: Consider a way to automate filling multiple properties at once
+        const sheet = {
+            ...characterRow,
+            abilityScores: {...abilityRow},
+            savingThrows: savingThrows,
+            features: features,
+            proficiencies: proficiencies,
+            spellSlots: {...spellSlots},
+            spells: spells
+        }
+        db.close();
+        return sheet;
     }
 
-    getFeatures(feature = null) {
-
+    getFeatures(feature=null) {
+        const featuresDir = Path.resolve('dndlibs', '..', 'FEPS', 'features');
+        if (feature) {
+            // Look for a specific feature object
+        } else {
+            // Return an array of all of them
+        }
     }
 
     getHealth() {
@@ -114,7 +178,7 @@ class Character {
      */
     getPrimaryRaceObj() {
         const race = this.getPrimaryRace();
-        return races.find(o => o.Name == race);
+        return races.find(o => o.name == race);
     }
 
     getProficiencies() {
@@ -158,4 +222,5 @@ module.exports = {
     Character,
     getAllSubRaceNames,
     getAbilityBonuses,
+    characterObjectFromUserId
 }

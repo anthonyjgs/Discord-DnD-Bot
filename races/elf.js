@@ -1,29 +1,29 @@
 module.exports = {
-    Name: "Elf",
-    AbilityScoreBonuses: {"dex": 2},
-    Speed: 30,
-    Features: ["darkVision", "feyAncestry", "trance"],
-    Proficiencies: ["perception"],
-    Languages: ["common", "elvish"],
+    name: "Elf",
+    abilityScoreBonuses: {"dex": 2},
+    speed: 30,
+    features: ["darkVision", "feyAncestry", "trance"],
+    proficiences: ["perception"],
+    languages: ["common", "elvish"],
 
-    SubRaces: [
+    subRaces: [
         {
-            Name: "Dark",
-            AbilityScoreBonuses: {"cha": 1},
-            Features: ["superiorDarkvision", "sunlightSensitivity", "drowMagic"],
-            Proficiencies: ["rapiers", "shortswords", "handCrossbows"]
+            name: "Dark",
+            abilityScoreBonuses: {"cha": 1},
+            features: ["superiorDarkvision", "sunlightSensitivity", "drowMagic"],
+            proficiences: ["rapiers", "shortswords", "handCrossbows"]
         },
         {
-            Name: "High",
-            AbilityScoreBonuses: {"int": 1},
-            Features: ["cantrip", "extraLanguage"],
-            Proficiencies: ["longswords", "shortswords", "shortbow", "longbow"]
+            name: "High",
+            abilityScoreBonuses: {"int": 1},
+            features: ["cantrip", "extraLanguage"],
+            proficiences: ["longswords", "shortswords", "shortbow", "longbow"]
         },
         {
-            Name: "Wood",
-            AbilityScoreBonuses: {"wis": 1},
-            Features: ["fleetOfFoot", "maskOfTheWild"],
-            Proficiencies: ["longswords", "shortswords", "shortbow", "longbow"]
+            name: "Wood",
+            abilityScoreBonuses: {"wis": 1},
+            features: ["fleetOfFoot", "maskOfTheWild"],
+            proficiences: ["longswords", "shortswords", "shortbow", "longbow"]
         }
     ]
 }

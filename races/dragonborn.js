@@ -1,21 +1,21 @@
 module.exports = {
-    Name: "Dragonborn",
-    AbilityScoreBonuses: {"str": 2, "cha": 1},
-    Speed: 30,
-    Features: ["breathWeapon", "damageResistance"],
-    Languages: ["common", "draconic"],
+    name: "Dragonborn",
+    abilityScoreBonuses: {"str": 2, "cha": 1},
+    speed: 30,
+    features: ["breathWeapon", "damageResistance"],
+    languages: ["common", "draconic"],
 
-    SubRaces: [
-        {Name: "Black"},
-        {Name: "Blue"},
-        {Name: "Brass"},
-        {Name: "Bronze"},
-        {Name: "Copper"},
-        {Name: "Gold"},
-        {Name: "Green"},
-        {Name: "Red"},
-        {Name: "Silver"},
-        {Name: "White"}
+    subRaces: [
+        {name: "Black"},
+        {name: "Blue"},
+        {name: "Brass"},
+        {name: "Bronze"},
+        {name: "Copper"},
+        {name: "Gold"},
+        {name: "Green"},
+        {name: "Red"},
+        {name: "Silver"},
+        {name: "White"}
     ],
 
     /**
