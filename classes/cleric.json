@@ -3,92 +3,92 @@
     "hitDice": "1d8",
     "startingHP": 8,
     "proficiencies": [
-        "lightArmor", "mediumArmor", "shields",
-        "simpleWeapons"
+        "Light Armor", "Medium Armor", "Shields",
+        "Simple Weapons"
     ],
     "savingThrows": ["wis", "cha"],
     "freeSkills": 2,
-    "potentionalSkills": ["history", "insight", "medicine", "persuasion", "religion"],
+    "potentionalSkills": ["History", "Insight", "Medicine", "Persuasion", "Religion"],
     "startingEquipment": {
-        "Option1": ["mace", "warhammer"],
-        "Option2": ["scaleMail", "leatherArmor", "chainMail"],
-        "Option3": [["lightCrossbow", "20_crossbowBolt"], "anySimpleWeapon"],
-        "Option4": ["priestsPack", "explorersPack"],
-        "Given": ["shield", "holySymbol"]
+        "option1": ["Mace", "Warhammer"],
+        "option2": ["Scale Mail", "Leather Armor", "Chain Mail"],
+        "option3": [["Light Crossbow", "20_Crossbow Bolt"], "anySimpleWeapon"],
+        "option4": ["Priest's Pack", "Explorer's Pack"],
+        "given": ["Shield", "Holy Symbol"]
     },
 
     "levels": {
         "level1": {
-            "features": ["spellcasting", "divineDomain"],
-            "spellslots": {"cantrips": 3, "spellLevel1": 2}
+            "features": ["Spellcasting", "Divine Domain"],
+            "spellSlots": {"cantrips": 3, "spellLevel1": 2}
         },
         "level2": {
-            "features": ["channelDivinity1", "divineDomainFeature"],
-            "spellslots": {"spellLevel1": 3}
+            "features": ["Channel Divinity1", "Divine Domain Feature"],
+            "spellSlots": {"spellLevel1": 3}
         },
         "level3": {
-            "spellslots": {"spellLevel1": 4, "spellLevel2": 2}
+            "spellSlots": {"spellLevel1": 4, "spellLevel2": 2}
         },
         "level4": {
-            "features": ["abilityScoreImprovement"],
-            "spellslots": {"cantrips": 4, "spellLevel2": 3}
+            "features": ["Ability Score Improvement"],
+            "spellSlots": {"cantrips": 4, "spellLevel2": 3}
         },
         "level5": {
             "features": ["destroyUndead1"],
-            "spellslots": {"spellLevel3": 2}
+            "spellSlots": {"spellLevel3": 2}
         },
         "level6": {
             "features": ["channelDivinity2", "divineDomainFeature"],
-            "spellslots": {"spellLevel3": 3}
+            "spellSlots": {"spellLevel3": 3}
         },
         "level7": {
-            "spellslots": {"spellLevel4": 1}
+            "spellSlots": {"spellLevel4": 1}
         },
         "level8": {
             "features": ["abilityScoreImprovement", "destroyUndead2", "divineDomainFeature"],
-            "spellslots": {"spellLevel4": 2}
+            "spellSlots": {"spellLevel4": 2}
         },
         "level9": {
-            "spellslots": {"spellLevel4": 3, "spellLevel5": 1}
+            "spellSlots": {"spellLevel4": 3, "spellLevel5": 1}
         },
         "level10": {
             "features": ["divineIntervention1"],
-            "spellslots": { "cantrips": 5, "spellLevel5": 2}
+            "spellSlots": { "cantrips": 5, "spellLevel5": 2}
         },
         "level11": {
             "features": ["destroyUndead3"],
-            "spellslots": {"spellLevel6": 1}
+            "spellSlots": {"spellLevel6": 1}
         },
         "level12": {
             "features": ["abilityScoreImprovement"]
         },
         "level13": {
-            "spellslots": {"spellLevel7": 1}
+            "spellSlots": {"spellLevel7": 1}
         },
         "level14": {
             "features": ["destroyUndead4"]
         },
         "level15": {
-            "spellslots": {"spellLevel8": 1}
+            "spellSlots": {"spellLevel8": 1}
         },
         "level16": {
             "features": ["abilityScoreImprovement"]
         },
         "level17": {
             "features": ["destroyUndead5", "divineDomainFeature"],
-            "spellslots": {"spellLevel9": 1}
+            "spellSlots": {"spellLevel9": 1}
         },
         "level18": {
             "features": ["channelDivinity3"],
-            "spellslots": {"spellLevel5": 3}
+            "spellSlots": {"spellLevel5": 3}
         },
         "level19": {
             "features": ["abilityScoreImprovement"],
-            "spellslots": {"spellLevel6": 2}
+            "spellSlots": {"spellLevel6": 2}
         },
         "level20": {
             "features": ["divineIntervention2"],
-            "spellslots": {"spellLevel7": 2}
+            "spellSlots": {"spellLevel7": 2}
         }
     }
 }

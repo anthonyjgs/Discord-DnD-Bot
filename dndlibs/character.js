@@ -45,6 +45,112 @@ function getAbilityBonuses(primaryRace, subRace=null) {
 const classesPath = Path.resolve('dndlibs', '..', 'classes');
 const classes = Utility.objArrayFromJSON(classesPath);
 
+/**
+ * Populate the relevent tables with the data from a character's race and class
+ * @param {Number} character_id the number id of the character
+ * @param {String} characterRace the race of the character
+ * @param {String} characterClass the class of the character
+ */
+ function initializeRaceAndClass(character_id, characterRace, characterClass) {
+    // Get references to the race and class objects
+    const char = new Character(character_id);
+    const raceObj = char.getPrimaryRaceObj();
+    const subRaceObj = raceObj.subRaces[char.getSubRace()];
+    const classObj = char.getClassObject();
+
+    const abilityMods = char.getAbilityModifiers();
+
+    // Set hp, hitdice, speed, proficiency bonus, level, experience
+    const maxHP = (classObj.startingHP + abilityMods.con);
+    const currentHP = maxHP;
+    
+    const hitDice = classObj.hitDice.split('d');
+    const hitDiceCount = hitDice[0];
+    const hitDiceSides = hitDice[1];
+
+    const speed = subRaceObj.speed || raceObj.speed;
+    const proficiencyBonus = 2;
+    const experience = 0;
+    const level = 1;
+    // Set features
+    const features = [
+        ...raceObj.features,
+        ...subRaceObj.features,
+        ...classObj.levels.level1.features
+    ]
+
+    // Set proficiencies
+    const proficiencies = [
+        ...raceObj.proficiencies,
+        ...subRaceObj.proficiencies,
+        ...classObj.proficiencies
+    ]
+    // Set savingThrows
+    const savingThrows = classObj.savingThrows;
+    // Set spellSlots
+    const spellSlots = classObj.levels.level1.spellSlots;
+    // Set languages
+    const languages = [
+        ...raceObj.languages,
+        ...subRaceObj.languages
+    ]
+    // TODO: INSERT EVERYTHING INTO THE DATABASE
+    const db = new Database(dbFile, {verbose: console.log});
+
+    // Update for HP, hit dice, speed, proficiency bonus, experience, and level
+    let stmt = db.prepare(
+        'UPDATE characters('+
+        'maxHP, currentHP, hitDiceCount, hitDiceSides,' +
+        'speed, proficiencyBonus, experience, level' +
+        ') VALUES(?,?,?,?, ?,?,?,?)' +
+        'WHERE id = ?')
+    stmt.run(maxHP, currentHP, hitDiceCount, hitDiceSides,
+        speed, proficiencyBonus, experience, level, character_id);
+    
+    // Insert features
+    for (const feature in features) {
+        db.prepare('INSERT INTO features(character_id, displayName) ' +
+            'VALUES(?, ?)')
+            .run(character_id, feature);
+    }
+
+    // Insert proficiencies
+    for (const proficiency in proficiencies) {
+        db.prepare('INSERT INTO proficiencies(character_id, displayName) ' +
+            'VALUES(?, ?)')
+            .run(character_id, proficiency);
+    }
+    // Insert given equipment (parse number of equipment also)
+    for (let equipment in classObj.startingEquipment.given) {
+        const equipmentArray = equipment.split('_');
+        let equipmentCount = 1;
+        if (equipmentArray == 2) {
+            equipmentCount = equipmentArray[0];
+            equipment = equipmentArray[1];
+        }
+        // Add a new row for every piece of equipment, even duplicates
+        for (let i = 0; i < equipmentCount; i++){
+            db.prepare('INSERT INTO inventory(character_id, displayName) ' +
+                'VALUES(?, ?)')
+                .run(character_id, equipment);
+        }
+    }
+    // Insert saving throws
+    for (const savingThrow in savingThrows) {
+        db.prepare('INSERT INTO savingThrows(character_id, savingThrow) ' +
+            'VALUES(?, ?)')
+            .run(character_id, savingThrow);
+    }
+    // Insert languages
+    for (const language in languages) {
+        db.prepare('INSERT INTO languages(character_id, language) ' +
+            'VALUES(?, ?)')
+            .run(character_id, language);
+    }
+
+    db.close();
+}
+
 // Creating a character object
 function characterObjectFromUserId(userId) {
     const db = new Database(dbFile, {verbose: console.log});
@@ -81,7 +187,7 @@ class Character {
      getAbilityModifiers() {
         let scores = this.getAbilityScores();
         for (let key in scores) {
-            scores[key] = Math.floor(scores[key] - 10);
+            scores[key] = Math.floor((scores[key] - 10)/2);
         }
         return scores
     }
@@ -99,6 +205,17 @@ class Character {
 
         db.close();
         return scores;
+    }
+
+    getClassObject(className=null) {
+        if (!className){
+            const db = new Database(dbFile, {verbose: console.log});
+            let stmt = db.prepare('SELECT class FROM characters WHERE id = ?');
+            className = stmt.get(this.id).class;
+            db.close();
+        }
+
+        return classes.find(o => o.name == className);
     }
 
     // TODO: Can make most of these into their own functions at some point
@@ -222,5 +339,6 @@ module.exports = {
     Character,
     getAllSubRaceNames,
     getAbilityBonuses,
-    characterObjectFromUserId
+    characterObjectFromUserId,
+    initializeRaceAndClass
 }

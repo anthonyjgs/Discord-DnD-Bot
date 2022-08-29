@@ -70,8 +70,13 @@ module.exports = {
             return;
         }
 
+        // TODO: Check to make sure the user does not already own a character
+        // with that same name.
+
+        
+        const characterRace = interaction.options.getString('race');
         // raceStrings is an array of format [subRace, Race]
-        const raceStrings = interaction.options.getString('race').split(' ');
+        const raceStrings = characterRace.split(' ');
         // both primary race and subrace are the relevant race objects
         const primaryRace = Character.races.find(o => o.name == raceStrings[1]);
         const subRace = primaryRace.subRaces.find(o => o.name == raceStrings[0]);
@@ -167,23 +172,21 @@ module.exports = {
                 keep = true;
             }
         }
+        
 
         // TODO: Insert the stats into the database (NEEDS REWRITE)
-        /*
-        db.prepare('INSERT INTO Characters(owner_id, name) VALUES(?, ?)')
-            .run(userId, characterName);
-        const characterId = db.prepare(
-            'SELECT character_id FROM Characters WHERE owner_id = ? AND name = ?'
-        ).get(userId, characterName).character_id;
-        // Fill the Statblocks
-        db.prepare(
-            'INSERT INTO Statblocks(' +
-            'id, race, class, strength, dexterity, constitution, intelligence, wisdom, charisma' +
-            ') VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)'
-        ).run(
-            characterId,
-            `${subRace.name} ${primaryRace.name}`,
-            characterClass,
+        // Insert userId, name, race, and class
+        let stmt = db.prepare(`INSERT INTO characters(user_id, name, race, class VALUES(?, ?, ?, ?)`);
+        stmt.run(userId, characterName, characterRace, characterClass);
+        // Get the newly created character's id
+        stmt = db.prepare('SELECT id FROM characters WHERE user_id = ? AND name = ?');
+        const characterId = stmt.get(userId, characterName).id;
+        // Set as active character
+        stmt = db.prepare('UPDATE users SET active_character_id = ? WHERE id = ?');
+        stmt.run(characterId, userId);
+        // Insert ability scores
+        stmt = db.prepare('INSERT INTO abilityScores VALUES(?,?,?,?,?,?,?)');
+        stmt.run(characterId,
             abilityScores.str,
             abilityScores.dex,
             abilityScores.con,
@@ -191,10 +194,14 @@ module.exports = {
             abilityScores.wis,
             abilityScores.cha
         );
-        db.prepare('UPDATE Users SET active_character_id = ? WHERE id = ?')
-            .run(characterId, userId);
-        */
-        // TODO: Initialize character at level 1
+
+        // Initialize Character
+        Character.initializeRaceAndClass(characterId, characterRace, characterClass);
+        // PICK Proficiences
+
+        // PICK Spells
+
+        // PICK Equipment
 
         // Confirm to the user that the character was created
         await interaction.followUp(
