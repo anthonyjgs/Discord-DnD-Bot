@@ -6,6 +6,7 @@ const { SlashCommandBuilder, BaseInteraction } = require('discord.js');
 const Database = require('better-sqlite3');
 const Dice = require('../dndlibs/dice');
 const Character = require('../dndlibs/character');
+const Utility = require('../miscUtility')
 
 // This module exports an object named data and an async function, execute
 module.exports = {
@@ -195,12 +196,56 @@ module.exports = {
             abilityScores.cha
         );
 
-        // Initialize Character
+        // Initialize Character (the things that the player has no matter what)
         Character.initializeRaceAndClass(characterId, characterRace, characterClass);
+        // Use a character object for access to useful functions
+        const charObj = new Character.Character(characterId);
+        
         // PICK Proficiences
+        const potProfs = [...characterClass.potentialSkills].join(', ').toLowerCase();
+        const numProfs = characterClass.freeSkills;
 
+        let msg = `Your class lets you pick ${numProfs} of the following ` +
+            `proficiencies: ${potProfs}\n Send a message with the two you ` +
+            `want, seperated by commas. (e.x.: insight, persuasion)`
+        interaction.channel.send(msg);
+        
+        let picked = false;
+        while (!picked) {
+            let usageString = 'Send a message with the two proficiencies you ' +
+            'want, seperated by commas. (e.x.: insight, persuasion)'
+            // Await the answer, then prep for parsing
+            let answer = await interaction.channel.awaitMessages({filter, max: 1});
+            answer = answer.toLowerCase();
+            let choiceArr = answer.split(',');
+            // If the answer is the wrong number of choices
+            if (choiceArr.length != numProfs) {
+                interaction.channel.send(usageString);
+                continue;
+            }
+            let receivedProfs = Utility.validateChoices(choiceArr, potProfs);
+            // Choices had a duplicate
+            if (receivedProfs === 1) {
+                // My chaotic energy has henceforth decided all user-facing
+                // error messages will now be passive aggressive.
+                interaction.channel.send(
+                    "Aww, did you stutter **with text?** It's okay, just " +
+                    "try again, and try not to repeat things this time. :)");
+            }
+            // Choices had an item missing from the available options
+            else if (receivedProfs === 2) {
+                interaction.channel.send("One of your choices wasn't in the " +
+                    "list of options. Try reading the options again, and you " +
+                    "can sound it out if you need to. I won't judge. :)");
+            }
+            charObj.addFEPS('proficiencies', receivedProfs);
+            picked = true;
+        }
         // PICK Spells
-
+        picked = false;
+        while (!picked) {
+            
+        }
         // PICK Equipment
 
         // Confirm to the user that the character was created
@@ -232,8 +277,7 @@ module.exports = {
     statRollsCopy = statRollsCopy.sort((a,b) => a - b);
     let receivedStats = [];
     for (let stat of statsMsg) {
-        stat.trim();
-        stat = stat.toLowerCase();
+        stat = stat.trim().toLowerCase();
 
         if (receivedStats.includes(stat)) {
             interaction.channel.send(`Cannot assign duplicate stats: ${stat}`);

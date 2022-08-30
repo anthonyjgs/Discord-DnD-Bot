@@ -34,7 +34,28 @@ function objArrayFromJS(dirPath) {
     return objects;
 }
 
+/**
+ * Compares one list, selected, with another list, available.
+ * When each element of selected is unique AND included in available, returns
+ * trimmed, lowercase, array from selected. Otherwise, it returns an error.
+ * 1: Duplicate items. 2: Selected item not found in available items
+ * @param {Array} selected Array of strings of selections to check
+ * @param {Array} available Array of strings representing valid selections
+ * @returns {Array} If valid, returns a cleaner version of the 'selected' array
+ */
+function validateChoices(selected, available) {
+    let receivedSelections = [];
+    for (let selection of selected){
+        selection = selection.trim().toLowerCase();
+        if (receivedSelections.includes(selection)) return 1;
+        if (!available.includes(selection)) return 2;
+        receivedSelections.push(selection);
+    }
+    return receivedSelections;
+}
+
 module.exports = {
     objArrayFromJS,
     objArrayFromJSON,
+    validateChoices
 }

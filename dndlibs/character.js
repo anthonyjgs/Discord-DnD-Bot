@@ -4,6 +4,7 @@
 const Path = require('node:path');
 const Utility = require('../miscUtility');
 const Database = require('better-sqlite3');
+const { features } = require('node:process');
 const dbFile = 'dnd.db';
 
 // Races
@@ -175,6 +176,38 @@ function characterObjectFromUserId(userId) {
 class Character {
     constructor(characterId) {
         this.id = characterId
+    }
+
+    /**
+     * Add FEPS to the relevant table in the database
+     * @param {String} table Which table? proficiencies, features, spells, or inventory?
+     * @param {Array} FEPS The elements to add to the relevant table
+     * @param {Database.Database} db Pass in the database if you don't want function to open and close it
+     */
+    addFEPS(table, FEPS, db=null) {
+        // Determine if this function needs to open database (and therefore close it too)
+        let closeDB = false;
+        if (!db || !db.open()) {
+            db = new Database(dbFile, {verbose: console.log});
+            closeDB = true;
+        }
+
+        // Ensure table is a valid option
+        table = table.toLowerCase();
+        const options = ['proficiencies', 'features', 'spells', 'inventory'];
+        if (!options.includes(table)) {
+            throw console.error('Invalid type passed into addFEPS()!');
+        }
+
+        // Add the feps
+        for (const fep of FEPS) {
+            const stmt = db.prepare(
+                `INSERT INTO ${table}(character_id, displayName) ` + 
+                `VALUES(?, ?)`);
+            stmt.run(this.id, fep);
+        }
+
+        if (closeDB) db.close();
     }
     // TODO:
     applyDamage(amount, type) {
