@@ -6,6 +6,8 @@ node_modules
 
 .eslintrc.json
 
+# A script to delete all rows from all tables, while keeping the structure,
+# used for testing.
 flush.js
-
+# Stores a backup of the database, created by the flush.js script
 backups

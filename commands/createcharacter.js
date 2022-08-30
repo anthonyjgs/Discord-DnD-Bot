@@ -176,8 +176,8 @@ module.exports = {
 
         // TODO: Insert the stats into the database (NEEDS REWRITE)
         // Insert userId, name, race, and class
-        let stmt = db.prepare(`INSERT INTO characters(user_id, name, race, class VALUES(?, ?, ?, ?)`);
-        stmt.run(userId, characterName, characterRace, characterClass);
+        let stmt = db.prepare('INSERT INTO characters(user_id, name, race, class) VALUES(?, ?, ?, ?)');
+        stmt.run(userId, characterName, characterRace, characterClass.name);
         // Get the newly created character's id
         stmt = db.prepare('SELECT id FROM characters WHERE user_id = ? AND name = ?');
         const characterId = stmt.get(userId, characterName).id;
