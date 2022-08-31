@@ -244,7 +244,19 @@ module.exports = {
         // PICK Spells
         picked = false;
         while (!picked) {
-            
+            const potSpells = characterClass.getLearnableSpells(charObj);
+
+            interaction.channel.send(`Pick your spells from the following:\n` +
+                `${potSpells.join(', ')}`);
+            let answer = await interaction.channel.awaitMessages({filter, max: 1});
+
+
+            const choiceArr = answer.split(',');
+
+            // TODO: Pick Spells and Add
+            let receivedSpells = Utility.validateChoices(choiceArr, potSpells);
+            charObj.addFEPS('spells', receivedSpells);
+            picked = true;
         }
         // PICK Equipment
 

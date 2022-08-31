@@ -52,7 +52,13 @@ const classes = Utility.objArrayFromJSON(classesPath);
  * @param {String} characterRace the race of the character
  * @param {String} characterClass the class of the character
  */
- function initializeRaceAndClass(character_id, characterRace, characterClass) {
+ function initializeRaceAndClass(character_id, characterRace, characterClass, db=null) {
+    if (!db || !db.open()) return dbWrap(initializeRaceAndClass(
+        character_id,
+        characterRace,
+        characterClass
+    ));
+
     // Get references to the race and class objects
     const char = new Character(character_id);
     const raceObj = char.getPrimaryRaceObj();
@@ -96,8 +102,6 @@ const classes = Utility.objArrayFromJSON(classesPath);
         ...subRaceObj.languages
     ]
     // TODO: INSERT EVERYTHING INTO THE DATABASE
-    const db = new Database(dbFile, {verbose: console.log});
-
     // Update for HP, hit dice, speed, proficiency bonus, experience, and level
     let stmt = db.prepare(
         'UPDATE characters('+
@@ -148,17 +152,21 @@ const classes = Utility.objArrayFromJSON(classesPath);
             'VALUES(?, ?)')
             .run(character_id, language);
     }
-
-    db.close();
 }
 
-// Creating a character object
-function characterObjectFromUserId(userId) {
-    const db = new Database(dbFile, {verbose: console.log});
+/**
+ * Get the active character of a user
+ * @param {Number} userId The user to get the character from
+ * @param {Database.Database} db Pass in the database if it's open 
+ * @returns 
+ */
+function characterObjectFromUserId(userId, db=null) {
+    // If no database passed in, use wrapper to handle opening and closing
+    if (!db || !db.open()) return dbWrap(characterObjectFromUserId, userId);
+    // If db passed in, do not handle database opening or closing at all
     const stmt =
         db.prepare('SELECT active_character_id FROM users WHERE id = ?');
     const activeCharacterId = stmt.get(userId).active_character_id;
-    db.close();
 
     if (activeCharacterId) {
         return new Character(activeCharacterId);
@@ -167,6 +175,22 @@ function characterObjectFromUserId(userId) {
         return undefined
     }
     
+}
+
+/**
+ * Checks for open database, and handles opening and closing if necessary
+ * @param {function} originalFunction The function to wrap
+ * @param {Database.Database} db The database to check
+ * @returns {*} The function called with db passed into it
+ */
+function dbWrap(originalFunction, ...args) {
+    // Make a connection to the database.
+    // (This also works if the db exists, but it was closed)
+    const db = new Database(dbFile, {verbose: console.log});
+    // If given a specific funtion, use that, otherwise use the 
+    const data = originalFunction(...args, db);
+    db.close();
+    return data;
 }
 
 /**
@@ -185,12 +209,9 @@ class Character {
      * @param {Database.Database} db Pass in the database if you don't want function to open and close it
      */
     addFEPS(table, FEPS, db=null) {
-        // Determine if this function needs to open database (and therefore close it too)
-        let closeDB = false;
-        if (!db || !db.open()) {
-            db = new Database(dbFile, {verbose: console.log});
-            closeDB = true;
-        }
+        // If no database passed in, use wrapper to handle opening and closing
+        if (!db || !db.open()) return dbWrap(this.getAbilityScores, table, FEPS);
+        // If db passed in, do not handle database opening or closing at all
 
         // Ensure table is a valid option
         table = table.toLowerCase();
@@ -206,13 +227,15 @@ class Character {
                 `VALUES(?, ?)`);
             stmt.run(this.id, fep);
         }
-
-        if (closeDB) db.close();
     }
+
+
     // TODO:
     applyDamage(amount, type) {
 
     }
+
+
 
     /**
      * Returns an object with the character's ability modifiers
@@ -228,32 +251,35 @@ class Character {
     /**
      * Returns an object with the character's ability scores
      */
-    getAbilityScores() {
-        const db = new Database(dbFile, {verbose: console.log});
+    getAbilityScores(db=null) {
+        // If no database passed in, use wrapper to handle opening and closing
+        if (!db || !db.open()) return dbWrap(this.getAbilityScores);
+        // If db passed in, do not handle database opening or closing at all
 
         // Should return an object like {strength: 12, dexterity: 14, ...}
         const scores = db.prepare('SELECT strength, dexterity, constitution,',
             'intelligence, wisdom, charisma FROM abilityScores WHERE id = ?')
             .get(this.id);
-
-        db.close();
         return scores;
     }
 
-    getClassObject(className=null) {
+    getClassObject(className=null, db=null) {
+        // If no database passed in, use wrapper to handle opening and closing
+        if (!db || !db.open()) return dbWrap(this.getClassObject, className);
+        // If db passed in, do not handle database opening or closing at all
         if (!className){
-            const db = new Database(dbFile, {verbose: console.log});
             let stmt = db.prepare('SELECT class FROM characters WHERE id = ?');
             className = stmt.get(this.id).class;
-            db.close();
         }
-
         return classes.find(o => o.name == className);
     }
 
     // TODO: Can make most of these into their own functions at some point
-    getCharacterSheet() {
-        const db = new Database(dbFile, {verbose: console.log});
+    getCharacterSheet(db=null) {
+        // If no database passed in, use wrapper to handle opening and closing
+        if (!db || !db.open()) return dbWrap(this.getCharacterSheet);
+        // If db passed in, do not handle database opening or closing at all
+
         const id = this.id;
         // General Character Stats
         let stmt = db.prepare('SELECT * FROM characters WHERE id = ?');
@@ -292,7 +318,6 @@ class Character {
             spellSlots: {...spellSlots},
             spells: spells
         }
-        db.close();
         return sheet;
     }
 
@@ -311,6 +336,18 @@ class Character {
 
     getInventory() {
 
+    }
+
+    /**
+     * Get's the character's level
+     * @param {Database.Database} db 
+     */
+    getLevel(db=null) {
+        // If no database passed in, use wrapper to handle opening and closing
+        if (!db || !db.open()) return dbWrap(this.getLevel);
+        // If db passed in, do not handle database opening or closing at all
+        return db.prepare('SELECT level FROM characters WHERE id = ?')
+                .get(this.id).level;
     }
 
     /**
@@ -339,11 +376,12 @@ class Character {
      * Returns the character's full race as a string
      * @returns {String}
      */
-    getRace() {
-        const db = new Database(dbFile, {verbose: console.log});
+    getRace(db=null) {
+        // If no database passed in, use wrapper to handle opening and closing
+        if (!db || !db.open()) return dbWrap(this.getRace);
+        // If db passed in, do not handle database opening or closing at all
         const stmt = db.prepare('SELECT race FROM characters WHERE id = ?');
         const race = stmt.get(this.id);
-        db.close();
         return race[race];
     }
 
@@ -351,8 +389,15 @@ class Character {
 
     }
 
-    getSpellSlots() {
+    getSpellSlots(db=null) {
+        // If no database passed in, use wrapper to handle opening and closing
+        if (!db || !db.open()) return dbWrap(this.getRace);
+        // If db passed in, do not handle database opening or closing at all
 
+        const stmt = db.prepare('SELECT * FROM spellSlots WHERE character_id = ?');
+        let slots = stmt.get(this.id);
+        delete slots.character_id;
+        return slots;
     }
 
     getSubRace() {

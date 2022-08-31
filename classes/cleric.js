@@ -1,3 +1,6 @@
+const Character = require('../dndlibs/character');
+const Utility = require('../miscUtility');
+
 module.exports = {
     name: "Cleric",
     hitDice: "1d8",
@@ -90,5 +93,42 @@ module.exports = {
             features: ["divineIntervention2"],
             spellSlots: {"spellLevel7": 2}
         }
+    },
+
+    /**
+     * 
+     * @param {Character.Character} characterObj 
+     */
+    getLearnableSpells(characterObj) {
+        const spellsPath = '../FEPS/spells/';
+        const spellSlots = characterObj.getSpellSlots();
+        
+        // Convert the slots to numbers
+        let slotLevels = Object.keys(spellSlots);
+        slotLevels = slotLevels.map(k => {
+            if (k.toLowerCase() == 'cantrips') return 0;
+            else {
+                // Cut out the letters, and return as a number
+                k = k.replace('slot', '');
+                return Math.floor(k);
+            }
+        })
+        const spellLevel = Math.max(slotLevels);
+
+        // Get the names of learnable spells
+        const learnableSpells = Utility.objArrayFromJS(spellsPath).map(o => {
+            if (o.slot <= spellLevel && o.classes.includes(this.name))
+                return o.name;
+        });
+        return learnableSpells;
+    },
+
+    getNumKnownSpells(character_id) {
+        // Num of known cleric spells is determined by cleric level and wisdom mod
+        const character = new Character.Character(character_id);
+        const wisdomMod = character.getAbilityModifiers().wisdom;
+        const level = character.getLevel();
+
+        return wisdomMod + level;
     }
 }
