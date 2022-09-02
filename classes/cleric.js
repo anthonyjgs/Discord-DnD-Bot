@@ -1,5 +1,7 @@
+// eslint-disable-next-line no-unused-vars
 const Character = require('../dndlibs/character');
 const Utility = require('../miscUtility');
+const Path = require('node:path');
 
 module.exports = {
     name: "Cleric",
@@ -11,7 +13,7 @@ module.exports = {
     ],
     savingThrows: ["wis", "cha"],
     freeSkills: 2,
-    potentionalSkills: ["History", "Insight", "Medicine", "Persuasion", "Religion"],
+    potentialSkills: ["History", "Insight", "Medicine", "Persuasion", "Religion"],
     startingEquipment: {
         option1: ["Mace", "Warhammer"],
         option2: ["Scale Mail", "Leather Armor", "Chain Mail"],
@@ -100,11 +102,12 @@ module.exports = {
      * @param {Character.Character} characterObj 
      */
     getLearnableSpells(characterObj, db=null) {
-        const spellsPath = '../FEPS/spells/';
+        const spellsPath = Path.resolve(__dirname, 'FEPS', 'spells');
         const spellSlots = characterObj.getSpellSlots(db);
         
         // Convert the slots to numbers
         let slotLevels = Object.keys(spellSlots);
+        // TODO:________________________________________________________
         slotLevels = slotLevels.map(k => {
             if (k.toLowerCase() == 'cantrips') return 0;
             else {
@@ -113,7 +116,7 @@ module.exports = {
                 return Math.floor(k);
             }
         })
-        const spellLevel = Math.max(slotLevels);
+        const spellLevel = Math.max(...slotLevels);
 
         // Get the names of learnable spells
         const learnableSpells = Utility.objArrayFromJS(spellsPath).map(o => {
@@ -125,15 +128,14 @@ module.exports = {
 
     /**
      * Returns the number of spells that a cleric can choose to know
-     * @param {Number} character_id The character's id number
+     * @param {Character.Character} characterObj The character's id number
      * @param {*} db The database to use, otherwise this function will handle both opening and closing the db
      * @returns 
      */
-    getNumKnownSpells(character_id, db=null) {
+    getNumKnownSpells(characterObj, db=null) {
         // Num of known cleric spells is determined by cleric level and wisdom mod
-        const character = new Character.Character(character_id);
-        const wisdomMod = character.getAbilityModifiers(db).wisdom;
-        const level = character.getLevel(db);
+        const wisdomMod = characterObj.getAbilityModifiers(db).wisdom;
+        const level = characterObj.getLevel(db);
 
         return wisdomMod + level;
     }

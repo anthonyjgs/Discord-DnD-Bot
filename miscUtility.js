@@ -45,8 +45,10 @@ function objArrayFromJS(dirPath) {
  */
 function validateChoices(selected, available) {
     let receivedSelections = [];
+    // Ensure both arrays are lowercase and trimmed
+    selected = selected.map(s => s.trim().toLowerCase());
+    available = available.map(s => s.trim().toLowerCase());
     for (let selection of selected){
-        selection = selection.trim().toLowerCase();
         if (receivedSelections.includes(selection)) return 1;
         if (!available.includes(selection)) return 2;
         receivedSelections.push(selection);

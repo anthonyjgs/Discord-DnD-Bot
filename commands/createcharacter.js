@@ -2,7 +2,7 @@
 
 // Imports SlashCommandBuilder from discord.js
 // eslint-disable-next-line no-unused-vars
-const { SlashCommandBuilder, BaseInteraction } = require('discord.js');
+const { SlashCommandBuilder, BaseInteraction, ChatInputCommandInteraction } = require('discord.js');
 const Database = require('better-sqlite3');
 const Dice = require('../dndlibs/dice');
 const Character = require('../dndlibs/character');
@@ -198,22 +198,24 @@ module.exports = {
         const charObj = new Character.Character(characterId);
         
         // PICK Proficiences
-        const potProfs = [...characterClass.potentialSkills].join(', ').toLowerCase();
+        const potProfs = [...characterClass.potentialSkills]
+        const potString = potProfs.join(', ');
         const numProfs = characterClass.freeSkills;
 
         let msg = `Your class lets you pick ${numProfs} of the following ` +
-            `proficiencies: ${potProfs}\n Send a message with the two you ` +
-            `want, seperated by commas. (e.x.: insight, persuasion)`
+            `proficiencies: ${potString}\n Send a message with the ${numProfs} you ` +
+            `want, seperated by commas. (e.x.: insight, persuasion)`;
         interaction.channel.send(msg);
         
         let picked = false;
         while (!picked) {
-            let usageString = 'Send a message with the two proficiencies you ' +
-            'want, seperated by commas. (e.x.: insight, persuasion)'
+            let usageString = `Send a message with the ${numProfs} proficiencies you ` +
+            'want, seperated by commas. (e.x.: insight, persuasion)';
             // Await the answer, then prep for parsing
             let answer = await interaction.channel.awaitMessages({filter, max: 1});
             answer = answer.first().content.toLowerCase();
             let choiceArr = answer.split(',');
+            choiceArr = choiceArr.map(s => s.trim());
             // If the answer is the wrong number of choices
             if (choiceArr.length != numProfs) {
                 interaction.channel.send(usageString);
@@ -245,7 +247,7 @@ module.exports = {
             picked = true;
         } else {
             // Otherwise, get the number of known spells from their class
-            var knownCount = characterClass.getNumKnownSpells(characterId, db);
+            var knownCount = characterClass.getNumKnownSpells(charObj, db);
         }
         while (!picked) {
             // Get available spell list and wait for player's response
