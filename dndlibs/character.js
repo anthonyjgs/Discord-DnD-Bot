@@ -44,7 +44,7 @@ function getAbilityBonuses(primaryRace, subRace=null) {
 
 // Classes
 const classesPath = Path.resolve('dndlibs', '..', 'classes');
-const classes = Utility.objArrayFromJSON(classesPath);
+const classes = Utility.objArrayFromJS(classesPath);
 
 /**
  * Populate the relevent tables with the data from a character's race and class
@@ -53,7 +53,7 @@ const classes = Utility.objArrayFromJSON(classesPath);
  * @param {String} characterClass the class of the character
  */
  function initializeRaceAndClass(character_id, characterRace, characterClass, db=null) {
-    if (!db || !db.open()) return dbWrap(initializeRaceAndClass(
+    if (!db || !db.open) return dbWrap(initializeRaceAndClass(
         character_id,
         characterRace,
         characterClass
@@ -61,72 +61,83 @@ const classes = Utility.objArrayFromJSON(classesPath);
 
     // Get references to the race and class objects
     const char = new Character(character_id);
-    const raceObj = char.getPrimaryRaceObj();
-    const subRaceObj = raceObj.subRaces[char.getSubRace()];
-    const classObj = char.getClassObject();
+    const raceObj = char.getPrimaryRaceObj(db);
+    const subRaceObj = char.getSubRaceObj(db);
+    const classObj = char.getClassObject(null, db);
 
-    const abilityMods = char.getAbilityModifiers();
+    const abilityMods = char.getAbilityModifiers(db);
 
     // Set hp, hitdice, speed, proficiency bonus, level, experience
-    const maxHP = (classObj.startingHP + abilityMods.con);
+    const maxHP = (classObj.startingHP + abilityMods.constitution);
     const currentHP = maxHP;
     
-    const hitDice = classObj.hitDice.split('d');
-    const hitDiceCount = hitDice[0];
-    const hitDiceSides = hitDice[1];
+    // TODO: Make this initialize as numbers
+    const [hitDiceCount, hitDiceSides] = classObj.hitDice.split('d');
 
-    const speed = subRaceObj.speed || raceObj.speed;
+    let speed;
+    // If the subRaceObj exists, check if has speed property, if so, use that
+    if (subRaceObj && subRaceObj.speed) speed = subRaceObj.speed;
+    // Otherwise use primary race speed
+    else speed = raceObj.speed;
+
     const proficiencyBonus = 2;
     const experience = 0;
     const level = 1;
+    
     // Set features
-    const features = [
-        ...raceObj.features,
-        ...subRaceObj.features,
-        ...classObj.levels.level1.features
-    ]
+    let raceFeatures = raceObj.features;
+    raceFeatures = raceFeatures ? [...raceFeatures] : [];
+    let subRaceFeatures = subRaceObj.features;
+    subRaceFeatures = subRaceFeatures ? [...subRaceFeatures] : [];
+    let classFeatures = classObj.levels.level1.features;
+    classFeatures = classFeatures ? [...classFeatures] : [];
+    const features = [...raceFeatures, ...subRaceFeatures, ...classFeatures]
 
     // Set proficiencies
-    const proficiencies = [
-        ...raceObj.proficiencies,
-        ...subRaceObj.proficiencies,
-        ...classObj.proficiencies
-    ]
+    let raceProfs = raceObj.proficiencies;
+    raceProfs = raceProfs ? [...raceProfs] : [];
+    let subRaceProfs = subRaceObj.proficiencies;
+    subRaceProfs = subRaceProfs ? [...subRaceProfs] : [];
+    let classProfs = classObj.proficiencies;
+    classProfs = classProfs ? [...classProfs] : [];
+    const proficiencies = [...raceProfs, ...subRaceProfs, ...classProfs]
+
     // Set savingThrows
-    const savingThrows = classObj.savingThrows;
-    // Set spellSlots
-    const spellSlots = classObj.levels.level1.spellSlots;
+    const savingThrows = [...classObj.savingThrows];
+    // Prep spellSlots for insertion
+    let spellSlots = classObj.levels.level1.spellSlots;
+    spellSlots = spellSlots ? new SpellSlots({...spellSlots}) : undefined;
     // Set languages
-    const languages = [
-        ...raceObj.languages,
-        ...subRaceObj.languages
-    ]
-    // TODO: INSERT EVERYTHING INTO THE DATABASE
+    let raceLangs = raceObj.languages;
+    raceLangs = raceLangs ? [...raceLangs] : [];
+    let subRaceLangs = subRaceObj.languages;
+    subRaceLangs = subRaceLangs ? [...subRaceLangs] : [];
+    const languages = [...raceLangs, ...subRaceLangs]
+
+    // INSERT EVERYTHING INTO THE DATABASE
     // Update for HP, hit dice, speed, proficiency bonus, experience, and level
-    let stmt = db.prepare(
-        'UPDATE characters('+
-        'maxHP, currentHP, hitDiceCount, hitDiceSides,' +
-        'speed, proficiencyBonus, experience, level' +
-        ') VALUES(?,?,?,?, ?,?,?,?)' +
-        'WHERE id = ?')
+    let stmt = db.prepare('UPDATE characters SET '+
+        'maxHP=?, currentHP=?, hitDiceCount=?, hitDiceSides=?, ' +
+        'speed=?, proficiencyBonus=?, experience=?, level=? ' +
+        'WHERE id = ?');
     stmt.run(maxHP, currentHP, hitDiceCount, hitDiceSides,
         speed, proficiencyBonus, experience, level, character_id);
     
     // Insert features
-    for (const feature in features) {
+    for (const feature of features) {
         db.prepare('INSERT INTO features(character_id, displayName) ' +
             'VALUES(?, ?)')
             .run(character_id, feature);
     }
 
     // Insert proficiencies
-    for (const proficiency in proficiencies) {
+    for (const proficiency of proficiencies) {
         db.prepare('INSERT INTO proficiencies(character_id, displayName) ' +
             'VALUES(?, ?)')
             .run(character_id, proficiency);
     }
-    // Insert given equipment (parse number of equipment also)
-    for (let equipment in classObj.startingEquipment.given) {
+    // Insert GIVEN equipment (parse number of equipment also)
+    for (let equipment of classObj.startingEquipment.given) {
         const equipmentArray = equipment.split('_');
         let equipmentCount = 1;
         if (equipmentArray == 2) {
@@ -141,13 +152,30 @@ const classes = Utility.objArrayFromJSON(classesPath);
         }
     }
     // Insert saving throws
-    for (const savingThrow in savingThrows) {
+    for (const savingThrow of savingThrows) {
         db.prepare('INSERT INTO savingThrows(character_id, savingThrow) ' +
             'VALUES(?, ?)')
             .run(character_id, savingThrow);
     }
+    // Insert spellSlots?
+    if (spellSlots) {
+        db.prepare('INSERT INTO spellSlots(cantrips, slot1, slot2, slot3, '+
+            'slot4, slot5, slot6, slot7, slot8, slot9) VALUES(?,?,?,?,?,?,?,?,?,?)')
+            .run(
+                spellSlots.cantrips,
+                spellSlots.slot1,
+                spellSlots.slot2,
+                spellSlots.slot3,
+                spellSlots.slot4,
+                spellSlots.slot5,
+                spellSlots.slot6,
+                spellSlots.slot7,
+                spellSlots.slot8,
+                spellSlots.slot9
+            );
+    }
     // Insert languages
-    for (const language in languages) {
+    for (const language of languages) {
         db.prepare('INSERT INTO languages(character_id, language) ' +
             'VALUES(?, ?)')
             .run(character_id, language);
@@ -162,7 +190,7 @@ const classes = Utility.objArrayFromJSON(classesPath);
  */
 function characterObjectFromUserId(userId, db=null) {
     // If no database passed in, use wrapper to handle opening and closing
-    if (!db || !db.open()) return dbWrap(characterObjectFromUserId, userId);
+    if (!db || !db.open) return dbWrap(characterObjectFromUserId, userId);
     // If db passed in, do not handle database opening or closing at all
     const stmt =
         db.prepare('SELECT active_character_id FROM users WHERE id = ?');
@@ -188,7 +216,7 @@ function dbWrap(originalFunction, ...args) {
     // (This also works if the db exists, but it was closed)
     const db = new Database(dbFile, {verbose: console.log});
     // If given a specific funtion, use that, otherwise use the 
-    const data = originalFunction(...args, db);
+    const data = originalFunction.call(this, ...args, db);
     db.close();
     return data;
 }
@@ -210,7 +238,7 @@ class Character {
      */
     addFEPS(table, FEPS, db=null) {
         // If no database passed in, use wrapper to handle opening and closing
-        if (!db || !db.open()) return dbWrap(this.getAbilityScores, table, FEPS);
+        if (!db || !db.open) return dbWrap.call(this, this.addFEPS, table, FEPS);
         // If db passed in, do not handle database opening or closing at all
 
         // Ensure table is a valid option
@@ -240,8 +268,8 @@ class Character {
     /**
      * Returns an object with the character's ability modifiers
      */
-     getAbilityModifiers() {
-        let scores = this.getAbilityScores();
+     getAbilityModifiers(db=null) {
+        let scores = this.getAbilityScores(db);
         for (let key in scores) {
             scores[key] = Math.floor((scores[key] - 10)/2);
         }
@@ -253,23 +281,24 @@ class Character {
      */
     getAbilityScores(db=null) {
         // If no database passed in, use wrapper to handle opening and closing
-        if (!db || !db.open()) return dbWrap(this.getAbilityScores);
+        if (!db || !db.open) return dbWrap.call(this, this.getAbilityScores);
         // If db passed in, do not handle database opening or closing at all
 
         // Should return an object like {strength: 12, dexterity: 14, ...}
-        const scores = db.prepare('SELECT strength, dexterity, constitution,',
-            'intelligence, wisdom, charisma FROM abilityScores WHERE id = ?')
-            .get(this.id);
+        const stmtString = 'SELECT strength, dexterity, constitution, ' +
+            'intelligence, wisdom, charisma FROM abilityScores WHERE id = ?';
+        const scores = db.prepare(stmtString).get(this.id);
         return scores;
     }
 
     getClassObject(className=null, db=null) {
         // If no database passed in, use wrapper to handle opening and closing
-        if (!db || !db.open()) return dbWrap(this.getClassObject, className);
+        if (!db || !db.open) return dbWrap.call(this, this.getClassObject, className);
         // If db passed in, do not handle database opening or closing at all
         if (!className){
             let stmt = db.prepare('SELECT class FROM characters WHERE id = ?');
-            className = stmt.get(this.id).class;
+            let classRow = stmt.get(this.id);
+            className = classRow.class;
         }
         return classes.find(o => o.name == className);
     }
@@ -277,7 +306,7 @@ class Character {
     // TODO: Can make most of these into their own functions at some point
     getCharacterSheet(db=null) {
         // If no database passed in, use wrapper to handle opening and closing
-        if (!db || !db.open()) return dbWrap(this.getCharacterSheet);
+        if (!db || !db.open) return dbWrap.call(this, this.getCharacterSheet);
         // If db passed in, do not handle database opening or closing at all
 
         const id = this.id;
@@ -344,7 +373,7 @@ class Character {
      */
     getLevel(db=null) {
         // If no database passed in, use wrapper to handle opening and closing
-        if (!db || !db.open()) return dbWrap(this.getLevel);
+        if (!db || !db.open) return dbWrap.call(this, this.getLevel);
         // If db passed in, do not handle database opening or closing at all
         return db.prepare('SELECT level FROM characters WHERE id = ?')
                 .get(this.id).level;
@@ -353,8 +382,9 @@ class Character {
     /**
      * @returns {String} The primary race string
      */
-    getPrimaryRace() {
-        const race = this.getRace().split(' ');
+    getPrimaryRace(db=null) {
+        let race = this.getRace(db);
+        race = race.split(' ');
         if (race.length == 1) return race[0];
         else if (race.length == 2) return race[1];
     }
@@ -363,8 +393,8 @@ class Character {
      * Get a reference to the primary race object file
      * @returns {Object} The race object from file
      */
-    getPrimaryRaceObj() {
-        const race = this.getPrimaryRace();
+    getPrimaryRaceObj(db=null) {
+        const race = this.getPrimaryRace(db);
         return races.find(o => o.name == race);
     }
 
@@ -378,11 +408,11 @@ class Character {
      */
     getRace(db=null) {
         // If no database passed in, use wrapper to handle opening and closing
-        if (!db || !db.open()) return dbWrap(this.getRace);
+        if (!db || !db.open) return dbWrap.call(this, this.getRace);
         // If db passed in, do not handle database opening or closing at all
         const stmt = db.prepare('SELECT race FROM characters WHERE id = ?');
         const race = stmt.get(this.id);
-        return race[race];
+        return race.race;
     }
 
     getSpells() {
@@ -391,23 +421,63 @@ class Character {
 
     getSpellSlots(db=null) {
         // If no database passed in, use wrapper to handle opening and closing
-        if (!db || !db.open()) return dbWrap(this.getRace);
+        if (!db || !db.open) return dbWrap.call(this, this.getRace);
         // If db passed in, do not handle database opening or closing at all
 
         const stmt = db.prepare('SELECT * FROM spellSlots WHERE character_id = ?');
         let slots = stmt.get(this.id);
-        delete slots.character_id;
+        slots ? delete slots.character_id : slots = undefined;
         return slots;
     }
 
-    getSubRace() {
-        const race = this.getRace().split(' ');
+    /**
+     * Returns the subrace as a string
+     * @param {String} raceName 
+     * @param {Database.Database} db 
+     * @returns {String}
+     */
+    getSubRace(raceName=null, db=null) {
+        const race = raceName ? raceName.split(' ') : this.getRace(db).split(' ');
         if (race.length == 1) return undefined;
         else if (race.length == 2) return race[0];
     }
 
+    getSubRaceObj(db=null) {
+        const raceName = this.getRace(db);
+        const primaryRace = this.getPrimaryRaceObj(db);
+        const subRaceName = this.getSubRace(raceName, db);
+        const subRaceObj = primaryRace.subRaces.find(o => o.name == subRaceName);
+        return subRaceObj;
+    }
+
     setHealth(n) {
 
+    }
+}
+
+class SpellSlots {
+    constructor({
+        cantrips=this.cantrips || 0,
+        slot1=this.slot1 || 0, 
+        slot2=this.slot2 || 0,
+        slot3=this.slot3 || 0,
+        slot4=this.slot4 || 0,
+        slot5=this.slot5 || 0,
+        slot6=this.slot6 || 0,
+        slot7=this.slot7 || 0,
+        slot8=this.slot8 || 0,
+        slot9=this.slot9 || 0
+    }) {
+        this.cantrips = cantrips;
+        this.slot1 = slot1;
+        this.slot2 = slot2;
+        this.slot3 = slot3;
+        this.slot4 = slot4;
+        this.slot5 = slot5;
+        this.slot6 = slot6;
+        this.slot7 = slot7;
+        this.slot8 = slot8;
+        this.slot9 = slot9;
     }
 }
 

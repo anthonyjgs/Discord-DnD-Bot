@@ -68,7 +68,7 @@ module.exports = {
             features: ["Ability Score Improvement"]
         },
         level17: {
-            features: ["Brutal Critical3"]
+            features: ["Brutal Critical_3"]
         },
         level18: {
             features: ["Indomitable Might"]

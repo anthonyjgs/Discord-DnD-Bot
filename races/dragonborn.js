@@ -2,8 +2,8 @@ module.exports = {
     name: "Dragonborn",
     abilityScoreBonuses: {"str": 2, "cha": 1},
     speed: 30,
-    features: ["breathWeapon", "damageResistance"],
-    languages: ["common", "draconic"],
+    features: ["Breath Weapon", "Damage Resistance"],
+    languages: ["Common", "Draconic"],
 
     subRaces: [
         {name: "Black"},
@@ -37,7 +37,7 @@ module.exports = {
                 return 'cold';
             default:
                 throw console.error(`Dragonborn subrace missing from `+
-                    `breathweapon damagetype! ${ancestry}`);
+                    `subrace damage types! ${ancestry}`);
         }
     },
 

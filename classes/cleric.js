@@ -23,75 +23,75 @@ module.exports = {
     levels: {
         level1: {
             features: ["Spellcasting", "Divine Domain"],
-            spellSlots: {"cantrips": 3, "spellLevel1": 2}
+            spellSlots: {"cantrips": 3, "slot1": 2}
         },
         level2: {
-            features: ["Channel Divinity1", "Divine Domain Feature"],
-            spellSlots: {"spellLevel1": 3}
+            features: ["Channel Divinity_1", "Divine Domain Feature"],
+            spellSlots: {"slot1": 3}
         },
         level3: {
-            spellSlots: {"spellLevel1": 4, "spellLevel2": 2}
+            spellSlots: {"slot1": 4, "slot2": 2}
         },
         level4: {
             features: ["Ability Score Improvement"],
-            spellSlots: {"cantrips": 4, "spellLevel2": 3}
+            spellSlots: {"cantrips": 4, "slot2": 3}
         },
         level5: {
-            features: ["destroyUndead1"],
-            spellSlots: {"spellLevel3": 2}
+            features: ["Destroy Undead_1"],
+            spellSlots: {"slot3": 2}
         },
         level6: {
-            features: ["channelDivinity2", "divineDomainFeature"],
-            spellSlots: {"spellLevel3": 3}
+            features: ["Channel Divinity_2", "Divine Domain Feature"],
+            spellSlots: {"slot3": 3}
         },
         level7: {
-            spellSlots: {"spellLevel4": 1}
+            spellSlots: {"slot4": 1}
         },
         level8: {
-            features: ["abilityScoreImprovement", "destroyUndead2", "divineDomainFeature"],
-            spellSlots: {"spellLevel4": 2}
+            features: ["Ability Score Improvement", "Destroy Undead_2", "Divine Domain Feature"],
+            spellSlots: {"slot4": 2}
         },
         level9: {
-            spellSlots: {"spellLevel4": 3, "spellLevel5": 1}
+            spellSlots: {"slot4": 3, "slot5": 1}
         },
         level10: {
-            features: ["divineIntervention1"],
-            spellSlots: { "cantrips": 5, "spellLevel5": 2}
+            features: ["Divine Intervention_1"],
+            spellSlots: { "cantrips": 5, "slot5": 2}
         },
         level11: {
-            features: ["destroyUndead3"],
-            spellSlots: {"spellLevel6": 1}
+            features: ["Destroy Undead_3"],
+            spellSlots: {"slot6": 1}
         },
         level12: {
-            features: ["abilityScoreImprovement"]
+            features: ["Ability Score Improvement"]
         },
         level13: {
-            spellSlots: {"spellLevel7": 1}
+            spellSlots: {"slot7": 1}
         },
         level14: {
-            features: ["destroyUndead4"]
+            features: ["Destroy Undead_4"]
         },
         level15: {
-            spellSlots: {"spellLevel8": 1}
+            spellSlots: {"slot8": 1}
         },
         level16: {
-            features: ["abilityScoreImprovement"]
+            features: ["Ability Score Improvement"]
         },
         level17: {
-            features: ["destroyUndead5", "divineDomainFeature"],
-            spellSlots: {"spellLevel9": 1}
+            features: ["Destroy Undead_5", "Divine Domain Feature"],
+            spellSlots: {"slot9": 1}
         },
         level18: {
-            features: ["channelDivinity3"],
-            spellSlots: {"spellLevel5": 3}
+            features: ["Channel Divinity_3"],
+            spellSlots: {"slot5": 3}
         },
         level19: {
-            features: ["abilityScoreImprovement"],
-            spellSlots: {"spellLevel6": 2}
+            features: ["Ability Score Improvement"],
+            spellSlots: {"slot6": 2}
         },
         level20: {
-            features: ["divineIntervention2"],
-            spellSlots: {"spellLevel7": 2}
+            features: ["Divine Intervention_2"],
+            spellSlots: {"slot7": 2}
         }
     },
 
@@ -99,9 +99,9 @@ module.exports = {
      * 
      * @param {Character.Character} characterObj 
      */
-    getLearnableSpells(characterObj) {
+    getLearnableSpells(characterObj, db=null) {
         const spellsPath = '../FEPS/spells/';
-        const spellSlots = characterObj.getSpellSlots();
+        const spellSlots = characterObj.getSpellSlots(db);
         
         // Convert the slots to numbers
         let slotLevels = Object.keys(spellSlots);
@@ -123,11 +123,17 @@ module.exports = {
         return learnableSpells;
     },
 
-    getNumKnownSpells(character_id) {
+    /**
+     * Returns the number of spells that a cleric can choose to know
+     * @param {Number} character_id The character's id number
+     * @param {*} db The database to use, otherwise this function will handle both opening and closing the db
+     * @returns 
+     */
+    getNumKnownSpells(character_id, db=null) {
         // Num of known cleric spells is determined by cleric level and wisdom mod
         const character = new Character.Character(character_id);
-        const wisdomMod = character.getAbilityModifiers().wisdom;
-        const level = character.getLevel();
+        const wisdomMod = character.getAbilityModifiers(db).wisdom;
+        const level = character.getLevel(db);
 
         return wisdomMod + level;
     }

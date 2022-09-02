@@ -155,12 +155,9 @@ module.exports = {
             `${characterName}'s final ability scores: \n${JSON.stringify(abilityScores)}`
         );
 
-        // TODO: Starting Equipment/Money
-
-        // TODO Initialize the character into the relevant tables
+        // Confirm if player wants to keep this character
         interaction.channel.send("Would you like to keep this character? (yes/no)");
 
-        // TODO: Make a while loop here
         let keep = false;
         while (!keep) {
             let isCommitted = await interaction.channel.awaitMessages({filter, max: 1});
@@ -172,10 +169,9 @@ module.exports = {
             } else if (isCommitted.toLowerCase() == 'yes') {
                 keep = true;
             }
-        }
-        
+        }    
 
-        // TODO: Insert the stats into the database (NEEDS REWRITE)
+        // Insert the stats into the database
         // Insert userId, name, race, and class
         let stmt = db.prepare('INSERT INTO characters(user_id, name, race, class) VALUES(?, ?, ?, ?)');
         stmt.run(userId, characterName, characterRace, characterClass.name);
@@ -197,7 +193,7 @@ module.exports = {
         );
 
         // Initialize Character (the things that the player has no matter what)
-        Character.initializeRaceAndClass(characterId, characterRace, characterClass);
+        Character.initializeRaceAndClass(characterId, characterRace, characterClass, db);
         // Use a character object for access to useful functions
         const charObj = new Character.Character(characterId);
         
@@ -216,7 +212,7 @@ module.exports = {
             'want, seperated by commas. (e.x.: insight, persuasion)'
             // Await the answer, then prep for parsing
             let answer = await interaction.channel.awaitMessages({filter, max: 1});
-            answer = answer.toLowerCase();
+            answer = answer.first().content.toLowerCase();
             let choiceArr = answer.split(',');
             // If the answer is the wrong number of choices
             if (choiceArr.length != numProfs) {
@@ -238,27 +234,74 @@ module.exports = {
                     "list of options. Try reading the options again, and you " +
                     "can sound it out if you need to. I won't judge. :)");
             }
-            charObj.addFEPS('proficiencies', receivedProfs);
+            charObj.addFEPS('proficiencies', receivedProfs, db);
             picked = true;
         }
         // PICK Spells
         picked = false;
+        // Check to see if character can even use spells by checking spell slots
+        const slotCounts = Object.values(charObj.getSpellSlots(db));
+        if (Math.max(slotCounts) <= 0) {
+            picked = true;
+        } else {
+            // Otherwise, get the number of known spells from their class
+            var knownCount = characterClass.getNumKnownSpells(characterId, db);
+        }
         while (!picked) {
-            const potSpells = characterClass.getLearnableSpells(charObj);
-
-            interaction.channel.send(`Pick your spells from the following:\n` +
+            // Get available spell list and wait for player's response
+            const potSpells = characterClass.getLearnableSpells(charObj, db);
+            interaction.channel.send(`Pick ${knownCount} spells from the following:\n` +
                 `${potSpells.join(', ')}`);
             let answer = await interaction.channel.awaitMessages({filter, max: 1});
-
-
+            answer = answer.first().content;
             const choiceArr = answer.split(',');
 
-            // TODO: Pick Spells and Add
+            // Validate answer
             let receivedSpells = Utility.validateChoices(choiceArr, potSpells);
+            if (receivedSpells.length > knownCount) {
+                interaction.channel.send(`Too many spells selected!`);
+                continue;
+            } else if (receivedSpells.length < knownCount) {
+                interaction.channel.send(`Too few spells selected!`);
+                continue;
+            }
+            // Add spells to database
             charObj.addFEPS('spells', receivedSpells);
             picked = true;
         }
         // PICK Equipment
+        interaction.channel.send("Now you'll pick some of your starting equipment.");
+        let equipmentCounter = 1;
+        const equipmentChoices = characterClass.startingEquipment;
+        let receivedEquipment = [];
+        // For each choice
+        for (const choice in equipmentChoices) {
+            if (choice == 'given') continue;
+            interaction.channel.send(
+                `Choice ${equipmentCounter}: ${choice.join(' or ')}`
+            );
+            picked = false;
+            // Await answer, then validate
+            while(!picked) {
+                let answer = await interaction.channel.awaitMessages({filter, max: 1});
+                answer = answer.first().content;
+                // Get choices as lowercase for easy checking
+                let choices = [...Object.keys(choice)];
+                // Using a loop, so I can push the element from choices, instead
+                // of using the player's answer however they formated it.
+                for (let option in choices) {
+                    if (answer.toLowerCase() == option.toLowerCase()) {
+                        receivedEquipment.push(option);
+                        picked = true;
+                    } else {
+                        interaction.channel.send(`That wasn't one of the ` +
+                            `options; can you try spelling it correctly?`);
+                    }
+                }
+            }
+        }
+        // After all the choices, add equipment to the database
+        charObj.addFEPS('inventory', receivedEquipment);
 
         // Confirm to the user that the character was created
         await interaction.followUp(
