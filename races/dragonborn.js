@@ -1,6 +1,6 @@
 module.exports = {
     name: "Dragonborn",
-    abilityScoreBonuses: {"str": 2, "cha": 1},
+    abilityScoreBonuses: {"strength": 2, "charisma": 1},
     speed: 30,
     features: ["Breath Weapon", "Damage Resistance"],
     languages: ["Common", "Draconic"],

@@ -41,17 +41,23 @@ function objArrayFromJS(dirPath) {
  * 1: Duplicate items. 2: Selected item not found in available items
  * @param {Array} selected Array of strings of selections to check
  * @param {Array} available Array of strings representing valid selections
- * @returns {Array} If valid, returns a cleaner version of the 'selected' array
+ * @returns {Array} If valid, returns a clean version of the 'selected'
+ * elements from the 'available' array.
  */
 function validateChoices(selected, available) {
     let receivedSelections = [];
     // Ensure both arrays are lowercase and trimmed
-    selected = selected.map(s => s.trim().toLowerCase());
-    available = available.map(s => s.trim().toLowerCase());
+    selected = selected.map(s => s.toLowerCase().replace(/\s+/, ''));
+    let options = available.map(s => s.toLowerCase().replace(/\s+/, ''));
     for (let selection of selected){
-        if (receivedSelections.includes(selection)) return 1;
-        if (!available.includes(selection)) return 2;
-        receivedSelections.push(selection);
+        if (!options.includes(selection)) return 2;
+        for (let i in options) {
+            if (selection == options[i]) {
+                if (receivedSelections.includes(available[i])) return 1;
+                receivedSelections.push(available[i]);
+                break;
+            }
+        }
     }
     return receivedSelections;
 }

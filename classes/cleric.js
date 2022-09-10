@@ -17,7 +17,7 @@ module.exports = {
     startingEquipment: {
         option1: ["Mace", "Warhammer"],
         option2: ["Scale Mail", "Leather Armor", "Chain Mail"],
-        option3: [["Light Crossbow", "20_Crossbow Bolt"], "anySimpleWeapon"],
+        option3: [["Light Crossbow", "20_Crossbow Bolt"], "Any Simple Weapon"],
         option4: ["Priest's Pack", "Explorer's Pack"],
         given: ["Shield", "Holy Symbol"]
     },
@@ -102,12 +102,12 @@ module.exports = {
      * @param {Character.Character} characterObj 
      */
     getLearnableSpells(characterObj, db=null) {
-        const spellsPath = Path.resolve(__dirname, 'FEPS', 'spells');
+        const spellsPath = Path.resolve(__dirname, '..', 'FEPS', 'spells');
         const spellSlots = characterObj.getSpellSlots(db);
         
+        // Use only the slots that are greater than zero
+        let slotLevels = Object.keys(spellSlots).filter(k => spellSlots[k] > 0);
         // Convert the slots to numbers
-        let slotLevels = Object.keys(spellSlots);
-        // TODO:________________________________________________________
         slotLevels = slotLevels.map(k => {
             if (k.toLowerCase() == 'cantrips') return 0;
             else {
@@ -119,10 +119,9 @@ module.exports = {
         const spellLevel = Math.max(...slotLevels);
 
         // Get the names of learnable spells
-        const learnableSpells = Utility.objArrayFromJS(spellsPath).map(o => {
-            if (o.slot <= spellLevel && o.classes.includes(this.name))
-                return o.name;
-        });
+        let learnableSpells = Utility.objArrayFromJS(spellsPath)
+            .filter(o => o.slot <= spellLevel && o.classes.includes(this.name));
+        learnableSpells = learnableSpells.map(o => o.name);
         return learnableSpells;
     },
 
