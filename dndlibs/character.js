@@ -281,32 +281,17 @@ class Character {
     }
 
     /**
-     * Add FEPS to the relevant table in the database
-     * @param {String} table Which table? proficiencies, features, spells, or inventory?
-     * @param {Array} FEPS The elements to add to the relevant table
-     * @param {Database.Database} db Pass in the database if you don't want function to open and close it
+     * Add items to the characters inventory, parsing for quantity
+     * @param {Array} items the items to add, an array of the item names
      */
-    addFEPS(table, FEPS, db=null) {
-        // If no database passed in, use wrapper to handle opening and closing
-        if (!db || !db.open) return dbWrap.call(this, this.addFEPS, table, FEPS);
-        // If db passed in, do not handle database opening or closing at all
-
-        // Ensure table is a valid option
-        table = table.toLowerCase();
-        const options = ['proficiencies', 'features', 'spells', 'inventory'];
-        if (!options.includes(table)) {
-            throw console.error('Invalid table passed into addFEPS()!');
-        }
-
-        // Add the feps
-        for (const fep of FEPS) {
-            const stmt = db.prepare(
-                `INSERT INTO ${table}(character_id, displayName) ` + 
-                `VALUES(?, ?)`);
-            stmt.run(this.id, fep);
+    addItems(items) {
+        if (!this.inventory) this.inventory = [];
+        for (let item of items) {
+            const itemArray = item.split('_');
+            let itemCount = 1;
+            if (itemArray)
         }
     }
-
 
     // TODO:
     applyDamage(amount, type) {
@@ -319,24 +304,24 @@ class Character {
         if (!db || !db.open) return dbWrap.call(this, this.commitToDB);
 
         // Characters Table
-        let stmt = ('UPDATE characters SET ',
-            'name = ?,',
-            'race = ?,',
-            'class = ?,',
-            'maxHP = ?,',
-            'currentHP = ? ',
-            'tempHP = ?,',
-            'hitDiceCount = ?,',
-            'hitDiceSides = ?,',
-            'deathSaveSuccesses = ?,',
-            'deathSaveFails = ?,',
-            'armorClass = ?,',
-            'initiative = ?,',
-            'speed = ?,',
-            'proficiencyBonus = ?,',
-            'money = ?,',
-            'experience = ?,',
-            'level = ?,',
+        let stmt = ('UPDATE characters SET '+
+            'name = ?, '+
+            'race = ?, '+
+            'class = ?, '+
+            'maxHP = ?, '+
+            'currentHP = ?, '+
+            'tempHP = ?, '+
+            'hitDiceCount = ?, '+
+            'hitDiceSides = ?, '+
+            'deathSaveSuccesses = ?, '+
+            'deathSaveFails = ?, '+
+            'armorClass = ?, '+
+            'initiative = ?, '+
+            'speed = ?, '+
+            'proficiencyBonus = ?, '+
+            'money = ?, '+
+            'experience = ?, '+
+            'level = ? '+
             'WHERE id = ?');
         db.prepare(stmt).run(
             this.name,
@@ -359,13 +344,19 @@ class Character {
             this.id
         );
         // Ability Scores Table
-        stmt = ('UPDATE abilityScores SET',
-            'strength = ?,',
-            'dexterity = ?,',
-            'constitution = ?,',
-            'intelligence = ?,',
-            'wisdom = ?,',
-            'charisma = ?',
+        stmt = db.prepare('SELECT * FROM abilityScores WHERE id = ?');
+        const scoresExist = stmt.get(this.id);
+        if (!scoresExist) {
+            stmt = db.prepare('INSERT INTO abilityScores(id) VALUES(?)');
+            stmt.run(this.id);
+        }
+        stmt = ('UPDATE abilityScores SET '+
+            'strength = ?, '+
+            'dexterity = ?, '+
+            'constitution = ?, '+
+            'intelligence = ?, '+
+            'wisdom = ?, '+
+            'charisma = ? '+
             'WHERE id = ?'
         );
         db.prepare(stmt).run(
@@ -383,15 +374,13 @@ class Character {
         db.prepare(stmt).run(this.id);
         // Then add each saving throw from the object's property
         for (const save of this.savingThrows) {
-            stmt = ('INSERT INTO savingThrows(character_id, savingThrow)',
+            stmt = ('INSERT INTO savingThrows(character_id, savingThrow) '+
                 'VALUES(?, ?)');
             db.prepare(stmt).run(this.id, save);
         }
 
         // Spell Slots Table
-        stmt = ('UPDATE spellSlots SET',
-            '? = ?, ',
-            'WHERE id = ?'
+        stmt = ('UPDATE spellSlots SET ? = ? WHERE id = ?'
         );
         for (const slot in this.spellSlots) {
             db.prepare(stmt).run(slot, this.spellSlots[slot], this.id);
@@ -399,11 +388,13 @@ class Character {
 
         // Spells Table
         // Wipe, then replace from spells property
-        stmt = ('DELETE FROM spells WHERE character_id = ?');
-        db.prepare(stmt).run(this.id);
-        stmt = ('INSERT INTO spells(character_id, displayName) VALUES(?, ?)');
-        for (const spell of this.spells) {
-            db.prepare(stmt).run(this.id, spell);
+        if (this.spells) {
+            stmt = ('DELETE FROM spells WHERE character_id = ?');
+            db.prepare(stmt).run(this.id);
+            stmt = ('INSERT INTO spells(character_id, displayName) VALUES(?, ?)');
+            for (const spell of this.spells) {
+                db.prepare(stmt).run(this.id, spell);
+            }
         }
 
         // Features Table
@@ -528,10 +519,10 @@ class Character {
 
     /**
      * Get's the character's level
-     * @param {Database.Database} db 
+     * @returns {Number} the character's level
      */
     getLevel() {
-        return this.cR.level;
+        return this.level;
     }
 
     /**
@@ -578,7 +569,6 @@ class Character {
     /**
      * Returns the subrace as a string
      * @param {String} raceName 
-     * @param {Database.Database} db 
      * @returns {String}
      */
     getSubRace(raceName=null) {

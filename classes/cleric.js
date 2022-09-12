@@ -11,7 +11,7 @@ module.exports = {
         "Light Armor", "Medium Armor", "Shields",
         "Simple Weapons"
     ],
-    savingThrows: ["wis", "cha"],
+    savingThrows: ["Wisdom", "Charisma"],
     freeSkills: 2,
     potentialSkills: ["History", "Insight", "Medicine", "Persuasion", "Religion"],
     startingEquipment: {

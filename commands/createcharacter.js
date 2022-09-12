@@ -273,7 +273,7 @@ module.exports = {
             choices = choices.map(s => Character.parseFromEquipment(s));
             interaction.channel.send(
                 `Choice ${equipmentCounter}: ` +
-                `${equipmentChoices[choice].join(' or ')}`
+                `${choices.join(' or ')}`
             );
             picked = false;
             // Await answer, then validate
@@ -312,12 +312,12 @@ module.exports = {
 
         // NOW IS WHEN THINGS SHOULD BE ADDED TO THE DATABASE!
         // Add a new row and use the SQL generated rowid for the characterId
-        let stmt = db.prepare('INSERT INTO characters(user_id)');
+        let stmt = db.prepare('INSERT INTO characters(user_id) VALUES(?)');
         const characterId = stmt.run(userId).lastInsertRowid;
         charObj.id = characterId;
 
         // Commit everything in the character object to the database
-        charObj.commitToDB();
+        charObj.commitToDB(db);
 
         // Set the user's active character
         db.prepare('UPDATE users SET active_character_id = ? WHERE id = ?')

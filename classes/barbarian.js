@@ -8,12 +8,12 @@ module.exports = {
         "Simple Weapons", "Martial Weapons"
     ],
 
-    savingThrows: ["str", "con"],
+    savingThrows: ["Strength", "Constitution"],
     freeSkills: 2,
     potentialSkills: ["Animal Handling", "Athletics", "Intimidation", "Nature", "Perception", "Survival"],
 
     startingEquipment: {
-        option1: ["Greataxe", "Any Martial Melee Weapon"],
+        option1: ["Any Martial Melee Weapon"],
         option2: ["2_Handaxe", "Any Simple Weapon"],
         given: ["Explorer's Pack", "4_Javelin"]
     },
