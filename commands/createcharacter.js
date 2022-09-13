@@ -293,7 +293,7 @@ module.exports = {
         } 
 
         // After all the choices, add equipment to the character
-        charObj.inventory.push(...receivedEquipment);
+        charObj.addItems(receivedEquipment);
 
         // Confirm if player wants to keep this character
         interaction.channel.send("Would you like to keep this character? (yes/no)");

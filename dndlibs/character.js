@@ -162,18 +162,7 @@ function getEquipList(s){
 
     // Add GIVEN equipment (parse number of equipment also)
     char.inventory = [];
-    for (let equipment of classObj.startingEquipment.given) {
-        const equipmentArray = equipment.split('_');
-        let equipmentCount = 1;
-        if (equipmentArray.length == 2) {
-            equipmentCount = equipmentArray[0];
-            equipment = equipmentArray[1];
-        }
-        // Add a new element for every piece of equipment, even duplicates
-        for (let i = 0; i < equipmentCount; i++){
-            char.inventory.push(equipment);
-        }
-    }
+    char.addItems(classObj.startingEquipment.given);
 
     return char;
 }
@@ -287,9 +276,18 @@ class Character {
     addItems(items) {
         if (!this.inventory) this.inventory = [];
         for (let item of items) {
+            // Equipment quantities are seperated by an underscore
             const itemArray = item.split('_');
             let itemCount = 1;
-            if (itemArray)
+            // If underscore was found, quantity should be the first element
+            if (itemArray == 2) {
+                itemCount = itemArray[0];
+                item = itemArray[2];
+            }
+
+            for (let i = 0; i < itemCount; i++) {
+                this.inventory.push(item);
+            }
         }
     }
 
