@@ -261,31 +261,39 @@ module.exports = {
         // For each choice
         for (const choice of Object.keys(equipmentChoices)) {
             if (choice == 'given') continue;
-            // Choices is an array of the strings from the current choice
+            // Choices is an array of objects from the current choice
             let choices = [...equipmentChoices[choice]];
+            // 'name' is for keeping equipment notation, 'text' is to display
+            choices = choices.map(s => {
+                return {name: s, text: Character.parseFromEquipment(s)}
+            });
             // Check each string for an equipment list and convert if needed
             for (const option in choices) {
-                let s = choices[option];
+                let s = choices[option].name;
                 s = Character.getEquipList(s);
                 // Deletes option from the array, replacing it with s
+                s = s.map(s => {
+                    return {name: s, text: Character.parseFromEquipment(s)}
+                })
                 choices.splice(option, 1, ...s);
             }
-            choices = choices.map(s => Character.parseFromEquipment(s));
             interaction.channel.send(
                 `Choice ${equipmentCounter}: ` +
-                `${choices.join(' or ')}`
+                `${choices.map(o => o.text).join(' or ')}`
             );
             picked = false;
             // Await answer, then validate
             while(!picked) {
                 let answer = await interaction.channel.awaitMessages({filter, max: 1});
                 answer = answer.first().content;
-                // Using a loop, so I can push() the element from choices,
-                // instead of using the player's answer however they formated it.
-                let validChoices = Utility.validateChoices([answer], choices);
+                // Validate against the text user was shown
+                let validChoices = Utility.validateChoices([answer], choices.map(o => o.text));
                 if (validChoices === 1) interaction.channel.send('Duplicate');
                 else if (validChoices === 2) interaction.channel.send('Not valid');
                 else {
+                    // Convert text back to the original item format
+                    validChoices = choices.filter(o => validChoices.includes(o.text));
+                    validChoices = validChoices.map(o => o.name);
                     receivedEquipment.push(...validChoices);
                     picked = true;
                 }
@@ -325,7 +333,7 @@ module.exports = {
 
         // Confirm to the user that the character was created
         await interaction.followUp(
-            `Created your new character, **${characterName} the ` +
+            `Created your new character, **${characterName}, the ` +
             `${subRace.name} ${primaryRace.name} ` + 
             `${characterClass.name.toLowerCase()}**.`
         );

@@ -182,7 +182,7 @@ function characterObjectFromUserId(userId, db=null) {
     const activeCharacterId = stmt.get(userId).active_character_id;
 
     if (activeCharacterId) {
-        return new Character(activeCharacterId);
+        return new Character(activeCharacterId, db);
     } else {
         // NO ACTIVE CHARACTER
         return null
@@ -257,16 +257,16 @@ class Character {
         // Spell Slots
         stmt = db.prepare('SELECT * FROM spellSlots WHERE character_id = ?');
         this.spellSlots = stmt.get(this.id);
-        delete this.spellSlots.character_id;
+        if (this.spellSlots) delete this.spellSlots.character_id;
         // Inventory
         stmt = db.prepare('SELECT * FROM inventory WHERE character_id = ?');
         this.inventory = stmt.all(this.id).map(o => o.displayName);
         // Saving throws
         stmt = db.prepare('SELECT * FROM savingThrows WHERE character_id = ?');
-        this.savingThrows = stmt.all(this.id).savingThrow;
+        this.savingThrows = stmt.all(this.id).map(o => o.savingThrow);
         // Languages
         stmt = db.prepare('SELECT * FROM languages WHERE character_id = ?');
-        this.languages = stmt.all(this.id).language;
+        this.languages = stmt.all(this.id).map(o => o.language);
     }
 
     /**
@@ -280,9 +280,9 @@ class Character {
             const itemArray = item.split('_');
             let itemCount = 1;
             // If underscore was found, quantity should be the first element
-            if (itemArray == 2) {
-                itemCount = itemArray[0];
-                item = itemArray[2];
+            if (itemArray.length == 2) {
+                itemCount = Number(itemArray[0]);
+                item = itemArray[1];
             }
 
             for (let i = 0; i < itemCount; i++) {
@@ -451,53 +451,6 @@ class Character {
         return classes.find(o => o.name == className);
     }
 
-    // TODO: Can make most of these into their own functions at some point
-    getCharacterSheet(db=null) {
-        // If no database passed in, use wrapper to handle opening and closing
-        if (!db || !db.open) return dbWrap.call(this, this.getCharacterSheet);
-        // If db passed in, do not handle database opening or closing at all
-
-        const id = this.id;
-        // General Character Stats
-        let stmt = db.prepare('SELECT * FROM characters WHERE id = ?');
-        const characterRow = stmt.get(id);
-        // Ability Scores
-        stmt = db.prepare('SELECT * FROM abilityScores WHERE id = ?');
-        const abilityRow = stmt.get(id);
-        delete abilityRow.id;
-        // Features
-        stmt = db.prepare('SELECT displayName FROM features WHERE character_id = ?');
-        const features = stmt.all(id).map(o => o.displayName);
-        // Proficiencies
-        stmt = db.prepare('SELECT displayName FROM proficiencies WHERE character_id = ?');
-        const proficiencies = stmt.all(id).map(o => o.displayName);
-        // Inventory
-        stmt = db.prepare('SELECT displayName FROM inventory WHERE character_id = ?');
-        const inventory = stmt.all(id).map(o => o.displayName);
-        // Saving Throws
-        stmt = db.prepare('SELECT savingThrow FROM savingThrows WHERE character_id = ?');
-        const savingThrows = stmt.all(id).map(o => o.savingThrow);
-        // Spell Slots
-        stmt.prepare('SELECT * FROM spellSlots WHERE character_id = ?');
-        const spellSlots = stmt.get(id);
-        delete spellSlots.character_id;
-        // Spells
-        stmt.prepare('SELECT displayName FROM spells WHERE character_id = ?');
-        const spells = stmt.all(id).map(o => o.displayName);
-
-        // TODO: Consider a way to automate filling multiple properties at once
-        const sheet = {
-            ...characterRow,
-            abilityScores: {...abilityRow},
-            savingThrows: savingThrows,
-            features: features,
-            proficiencies: proficiencies,
-            spellSlots: {...spellSlots},
-            spells: spells
-        }
-        return sheet;
-    }
-
     getFeatureObjects(feature=null) {
         const featuresDir = Path.resolve('dndlibs', '..', 'FEPS', 'features');
         if (feature) {
@@ -513,6 +466,11 @@ class Character {
 
     getInventory() {
 
+    }
+
+
+    calculateArmorClass() {
+        
     }
 
     /**
