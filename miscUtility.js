@@ -46,9 +46,20 @@ function objArrayFromJS(dirPath) {
  */
 function validateChoices(selected, available) {
     let receivedSelections = [];
-    // Ensure both arrays are lowercase and trimmed
-    selected = selected.map(s => s.toLowerCase().replace(/\s+/, ''));
-    let options = available.map(s => s.toLowerCase().replace(/\s+/, ''));
+    // Ensure both arrays are lowercase and all spaces removed
+    function deleteSpaces(s){
+        let temp = '';
+        for (let c of s) {
+            if (c != ' ') temp += c;
+        }
+        return temp;
+    }
+
+    selected = selected.map(s => s.toLowerCase());
+    selected = selected.map(s => deleteSpaces(s));
+    let options = available.map(s => s.toLowerCase());
+    options = options.map(s => deleteSpaces(s));
+
     for (let selection of selected){
         if (!options.includes(selection)) return 2;
         for (let i in options) {

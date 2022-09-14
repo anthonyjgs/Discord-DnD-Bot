@@ -75,6 +75,8 @@ module.exports = {
         // TODO: Check to make sure the user does not already own a character
         // with that same name.
 
+        // Makes it easy for future interaction messages to just use followup()
+        await interaction.reply('Creating your character...');
         
         const characterRace = interaction.options.getString('race');
         // raceStrings is an array of format [subRace, Race]
@@ -88,9 +90,6 @@ module.exports = {
         console.log(`Character race: ${subRace.name} ${primaryRace.name}`);
         console.log(`Character class: ${characterClass.name}`);
 
-        // Makes it easy for future interaction messages to just use followup()
-        interaction.reply('Creating your character...');
-
         // Roll the new character's stats
         let statRolls = [];
         // 6 ability scores. Str, Dex, Con, Int, Wis, Cha
@@ -100,7 +99,7 @@ module.exports = {
             statRolls.push(Dice.rollDice(4, 6, 1).reduce((a, b) => a + b, 0));
         }
 
-        interaction.channel.send(
+        await interaction.channel.send(
             `You rolled these stat values: **${statRolls.join(', ')}**\n` +
             'Assign your stats by sending a message with each ability score,' +
             ' sperated by a comma and' +
@@ -114,7 +113,7 @@ module.exports = {
         
         const raceAbilityBonuses = Character.getAbilityBonuses(primaryRace, subRace);
         console.log(`raceAbilityBonuses: ${JSON.stringify(raceAbilityBonuses)}`);
-        interaction.channel.send(
+        await interaction.channel.send(
             `${characterName} has the following ability score bonuses due to` +
             ` their race: ${JSON.stringify(raceAbilityBonuses)}`
         );
@@ -127,7 +126,7 @@ module.exports = {
             ' constitution, intelligence, wisdom, charisma';
         let abilityScores = {};
         while (!statsMsgValid) {
-            interaction.channel.send(
+            await interaction.channel.send(
                 'Assign your stat rolls by sending a message with your stats ' +
                 'from highest to lowest.'
             );
@@ -160,7 +159,7 @@ module.exports = {
             scoresArray.push(`${score}: ${abilityScores[score]}`);
         }
         let scoresString = scoresArray.join(', ');
-        interaction.channel.send(
+        await interaction.channel.send(
             `${characterName}'s final ability scores: \n${scoresString}`
         );
 
@@ -178,7 +177,7 @@ module.exports = {
         let msg = `Your class lets you pick ${numProfs} of the following ` +
             `proficiencies: ${potString}\n Send a message with the ${numProfs} you ` +
             `want, seperated by commas. (e.x.: insight, persuasion)`;
-        interaction.channel.send(msg);
+        await interaction.channel.send(msg);
         
         let picked = false;
         while (!picked) {
@@ -263,25 +262,28 @@ module.exports = {
             if (choice == 'given') continue;
             // Choices is an array of objects from the current choice
             let choices = [...equipmentChoices[choice]];
+
+            // Check each string for an equipment list and convert if needed
+            for (const option in choices) {
+                let s = choices[option];
+                if (Array.isArray(s)) continue;
+                
+                s = Character.getEquipList(s);
+                // Deletes option from the array, replacing it with s
+                choices.splice(option, 1, ...s);
+            }
+
             // 'name' is for keeping equipment notation, 'text' is to display
             choices = choices.map(s => {
                 return {name: s, text: Character.parseFromEquipment(s)}
             });
-            // Check each string for an equipment list and convert if needed
-            for (const option in choices) {
-                let s = choices[option].name;
-                s = Character.getEquipList(s);
-                // Deletes option from the array, replacing it with s
-                s = s.map(s => {
-                    return {name: s, text: Character.parseFromEquipment(s)}
-                })
-                choices.splice(option, 1, ...s);
-            }
+
             interaction.channel.send(
                 `Choice ${equipmentCounter}: ` +
-                `${choices.map(o => o.text).join(' or ')}`
+                `${choices.map(o => o.text).join(', or ')}`
             );
             picked = false;
+
             // Await answer, then validate
             while(!picked) {
                 let answer = await interaction.channel.awaitMessages({filter, max: 1});
@@ -298,6 +300,7 @@ module.exports = {
                     picked = true;
                 }
             }
+            equipmentCounter++;
         } 
 
         // After all the choices, add equipment to the character

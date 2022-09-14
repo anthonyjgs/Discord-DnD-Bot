@@ -98,7 +98,7 @@ module.exports = {
     },
 
     /**
-     * 
+     * Returns the learnable cleric spells (not cantrips) for this character
      * @param {Character.Character} characterObj 
      */
     getLearnableSpells(characterObj, db=null) {
@@ -117,24 +117,35 @@ module.exports = {
             }
         })
         const spellLevel = Math.max(...slotLevels);
+        if (spellLevel < 1) return null;
 
-        // Get the names of learnable spells
+        // Get the names of learnable spells, excluding cantrips
         let learnableSpells = Utility.objArrayFromJS(spellsPath)
-            .filter(o => o.slot <= spellLevel && o.classes.includes(this.name));
+            .filter(
+                o => o.slot <= spellLevel &&
+                o.classes.includes(this.name) &&
+                o.slot != 0);
         learnableSpells = learnableSpells.map(o => o.name);
         return learnableSpells;
     },
 
     /**
+     * Returns the number of cantrips that a cleric can know
+     * @param {Character.Character} characterObj The character's object
+     */
+    getNumKNownCantrips(characterObj) {
+
+    },
+
+    /**
      * Returns the number of spells that a cleric can choose to know
-     * @param {Character.Character} characterObj The character's id number
-     * @param {*} db The database to use, otherwise this function will handle both opening and closing the db
+     * @param {Character.Character} characterObj The character's object
      * @returns 
      */
-    getNumKnownSpells(characterObj, db=null) {
+    getNumKnownSpells(characterObj) {
         // Num of known cleric spells is determined by cleric level and wisdom mod
-        const wisdomMod = characterObj.getAbilityModifiers(db).wisdom;
-        const level = characterObj.getLevel(db);
+        const wisdomMod = characterObj.getAbilityModifiers().wisdom;
+        const level = characterObj.getLevel();
 
         return wisdomMod + level;
     }

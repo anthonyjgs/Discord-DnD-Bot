@@ -5,6 +5,7 @@ const Path = require('node:path');
 const Utility = require('../miscUtility');
 const Database = require('better-sqlite3');
 const { features } = require('node:process');
+const { type } = require('node:os');
 const dbFile = 'dnd.db';
 
 // Races
@@ -39,16 +40,23 @@ function getAllSubRaceNames() {
  */
 function getAbilityBonuses(primaryRace, subRace=null) {
     let bonuses = primaryRace.abilityScoreBonuses;
-    if (subRace) {
-        for (const bonus in subRace.abilityScoreBonuses) {
-            bonuses[bonus] ? bonuses[bonus] += bonus : bonuses[bonus] = bonus;
+    if (subRace && subRace.abilityScoreBonuses) {
+        const subBonuses = subRace.abilityScoreBonuses;
+        for (const [key, value] of Object.entries(subBonuses)) {
+            bonuses[key] ? bonuses[key] += value : bonuses[key] = value;
         }
     }
     return bonuses;
 }
 
 function parseFromEquipment(equipment){
-    const itemArray = equipment.split('_');
+    let itemArray = [];
+    // If given an array, parse each element than group them as one
+    if (Array.isArray(equipment)) {
+        itemArray = equipment.map(s => parseFromEquipment(s));
+        return itemArray.join(` with `);
+    } else itemArray = equipment.split('_');
+    
     // If itemArray is only 1 element, then there is only one item
     if (itemArray.length == 1) return `${equipment}`;
     // If itemArray is 2 elements, then it is an item and its quantity
@@ -276,6 +284,10 @@ class Character {
     addItems(items) {
         if (!this.inventory) this.inventory = [];
         for (let item of items) {
+            if (Array.isArray(item)) {
+                this.addItems(item);
+                continue;
+            };
             // Equipment quantities are seperated by an underscore
             const itemArray = item.split('_');
             let itemCount = 1;
@@ -378,12 +390,19 @@ class Character {
         }
 
         // Spell Slots Table
-        stmt = ('UPDATE spellSlots SET ? = ? WHERE id = ?'
-        );
-        for (const slot in this.spellSlots) {
-            db.prepare(stmt).run(slot, this.spellSlots[slot], this.id);
-        }
+        if (this.spellSlots) {
+            // Check if spellSlots table exists
+            stmt = db.prepare('SELECT * FROM spellSlots WHERE character_id = ?');
+            if (!stmt.get(this.id)) {
+                stmt = db.prepare('INSERT INTO spellSlots(character_id) VALUES(?)');
+                stmt.run(this.id);
+            }
 
+            for (const slot in this.spellSlots) {
+                stmt = db.prepare(`UPDATE spellSlots SET ${slot} = ? WHERE character_id = ?`);
+                stmt.run(this.spellSlots[slot], this.id);
+            }
+        }
         // Spells Table
         // Wipe, then replace from spells property
         if (this.spells) {
