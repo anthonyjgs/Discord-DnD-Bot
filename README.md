@@ -1,6 +1,6 @@
 # Discord Dungeon Master
 
-Video Presentation: [LINK GOES HERE]
+Video Presentation: https://youtu.be/OkeZIAbI6qk
 
 This project was developed as my final project for CS50 2022. Discord Dungeon
 Master is a Discord bot that aims to add features to your discord server,
