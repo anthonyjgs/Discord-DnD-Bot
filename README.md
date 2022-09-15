@@ -34,7 +34,55 @@ While the actual user experience is too minimal to be of useful yet, the vast
 majority of my work has been on making an extensively modular foundation for
 this project with the intention that it will be worked on in the future.
 
-## Installation:
+## Installation and Setup:
+First, you must have nodejs installed, with npm (usually comes with it):
+https://nodejs.org/.
 
-## Setup:
+Then you can clone the repository to your folder of choice
+like any other github project.
 
+In your terminal, in that directory, install the dependencies using
+npm -install.
+
+Because I do not actively host this bot continuously, it is best if you use
+this code to host your own. To do this, setup a Discord application the 
+'Creating an App' instructions here: https://discord.com/developers/docs/getting-started,
+BUT make sure to give your bot permissions for: read messages/view channels,
+send messages, read message history, and use slash commands.
+
+Now that you've created your application on discord, you need to setup the .env
+file. Create a .env file in the same folder as app.js, and inside write the
+following code:
+```
+DISCORD_TOKEN = [YOUR DISCORD BOT TOKEN]
+CLIENT_ID = [YOUR CLIENT ID]
+GUILD_ID = [YOUR GUILD ID]
+```
+All three values are found in the developer portal for your bot. DISCORD_TOKEN
+is the token you generate for your bot. CLIENT_ID is your application id under
+'general information'. GUILD_ID is the server id of the discord server you want
+this bot to run on.
+
+Finally, go into the same directory as app.js and run ```node deploy-commands```
+in your terminal. Now the bot is ready to launch! Just run ```node .``` or
+```node app.js```.
+
+## USING THE BOT:
+Once it is running on your server, you should see extra slash commands appear
+when you start typing '/' in your message box. Use /dndhelp to see the full
+list of commands and short descriptions for each.
+
+The main one is /create_character. While typing or autocompleting, it should
+prompt you for a name, a race, and a class. For race and class it will present
+a list of the current options. From here, follow the instructions and prompts
+until prompted to keep the character, type 'yes' to finalize, and your character
+is now saved to the database!
+
+You can view the current stats for your character by using the /character_sheet
+command.
+
+You will notice that some entries are null in the database, but for almost all
+of these, it is because these values do not exist for the majority of play time,
+so these will be initialized later as needed (initiative does not exist outside
+of combat, for example). Money will be implemented at a later date, when I have
+a better idea for how I want to implement economies within the bot.

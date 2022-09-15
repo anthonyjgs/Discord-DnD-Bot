@@ -199,14 +199,12 @@ module.exports = {
                 // My chaotic energy has henceforth decided all user-facing
                 // error messages will now be passive aggressive.
                 interaction.channel.send(
-                    "Aww, did you stutter? It's okay, just " +
-                    "try again, and try not to repeat things this time. :)");
+                    "One of your choices was repeated!");
             }
             // Choices had an item missing from the available options
             else if (receivedProfs === 2) {
                 interaction.channel.send("One of your choices wasn't in the " +
-                    "list of options. Try reading the options again, and you " +
-                    "can sound it out if you need to. I won't judge. :)");
+                    "list of options!");
             }
             // Otherwise, the choices were indeed valid
             else {
