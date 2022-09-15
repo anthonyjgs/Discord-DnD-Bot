@@ -10,8 +10,8 @@ sessions to be run within the server, without needing a 3rd party website.
 
 However, this is evidently a massive undertaking, so for now the project is
 just to demonstrate a proof of concept. Currently you can roll dice using dice
-notation and create characters (limited by the items, spells, etc., that I have
-created files for).
+notation (1d20, for example) and create characters (limited by the items, spells,
+etc., that I have created files for).
 
 Users can create a character with stats, equipment, traits, spells, etc., and
 their character is saved into an SQLite3 database. While currently very limited,
@@ -27,8 +27,8 @@ Discord Dungeon Master.
 New commands and actions are also designed to be easy to implement for the
 future. Because characters are their own class, it is easy to retrieve them,
 edit their data, and update their database entries. Using items, or casting
-spells should be easy, just need a chat command that calls a use() function for
-a chosen item, or a cast() function for a spell.
+spells should be easy, just need a chat command that calls a `use()` function for
+a chosen item, or a `cast()` function for a spell.
 
 While the actual user experience is too minimal to be of useful yet, the vast
 majority of my work has been on making an extensively modular foundation for
@@ -41,8 +41,8 @@ https://nodejs.org/.
 Then you can clone the repository to your folder of choice
 like any other github project.
 
-In your terminal, in that directory, install the dependencies using
-npm -install.
+In your terminal, in the same directory as app.js, install the dependencies using
+`npm -install`.
 
 Because I do not actively host this bot continuously, it is best if you use
 this code to host your own. To do this, setup a Discord application the 
@@ -50,7 +50,7 @@ this code to host your own. To do this, setup a Discord application the
 BUT make sure to give your bot permissions for: read messages/view channels,
 send messages, read message history, and use slash commands.
 
-Now that you've created your application on discord, you need to setup the .env
+Now that you've created your application on Discord, you need to setup the .env
 file. Create a .env file in the same folder as app.js, and inside write the
 following code:
 ```
@@ -63,22 +63,22 @@ is the token you generate for your bot. CLIENT_ID is your application id under
 'general information'. GUILD_ID is the server id of the discord server you want
 this bot to run on.
 
-Finally, go into the same directory as app.js and run ```node deploy-commands```
-in your terminal. Now the bot is ready to launch! Just run ```node .``` or
-```node app.js```.
+Finally, go into the same directory as app.js and run `node deploy-commands`
+in your terminal. Now the bot is ready to launch! Just run `node .` or
+`node app.js`.
 
 ## USING THE BOT:
 Once it is running on your server, you should see extra slash commands appear
-when you start typing '/' in your message box. Use /dndhelp to see the full
+when you start typing `/` in your message box. Use `/dndhelp` to see the full
 list of commands and short descriptions for each.
 
-The main one is /create_character. While typing or autocompleting, it should
+The main one is `/create_character`. While typing or autocompleting, it should
 prompt you for a name, a race, and a class. For race and class it will present
 a list of the current options. From here, follow the instructions and prompts
-until prompted to keep the character, type 'yes' to finalize, and your character
+until prompted to keep the character, type `yes` to finalize, and your character
 is now saved to the database!
 
-You can view the current stats for your character by using the /character_sheet
+You can view the current stats for your character by using the `/character_sheet`
 command.
 
 You will notice that some entries are null in the database, but for almost all
