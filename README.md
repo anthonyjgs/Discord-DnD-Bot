@@ -64,8 +64,7 @@ is the token you generate for your bot. CLIENT_ID is your application id under
 this bot to run on.
 
 Finally, go into the same directory as app.js and run `node deploy-commands`
-in your terminal. Now the bot is ready to launch! Just run `node .` or
-`node app.js`.
+in your terminal. Now the bot is ready to launch! Just run `node app.js`.
 
 ## USING THE BOT:
 Once it is running on your server, you should see extra slash commands appear
