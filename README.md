@@ -30,9 +30,9 @@ edit their data, and update their database entries. Using items, or casting
 spells should be easy, just need a chat command that calls a `use()` function for
 a chosen item, or a `cast()` function for a spell.
 
-While the actual user experience is too minimal to be of useful yet, the vast
-majority of my work has been on making an extensively modular foundation for
-this project with the intention that it will be worked on in the future.
+While the actual UI is minimal, the vast majority of my work has been on making
+an extensively modular foundation for this project with the goal of having something
+that can be expanded on in the future.
 
 ## Installation and Setup:
 First, you must have nodejs installed, with npm (usually comes with it):
